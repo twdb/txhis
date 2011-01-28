@@ -1,0 +1,4 @@
+2010-03-15 17:58:06,355 - C:\Documents and Settings\CTtan\Desktop\TWDB_EAI_TPWD\dbFactory9448 - INFO - Intitializing Database Connection : 10.10.13.77:3108/OD_TPWD
+2010-03-15 17:58:06,809 - C:\Documents and Settings\CTtan\Desktop\TWDB_EAI_TPWD\dbFactory9448 - INFO - DataBase Connection established
+2010-03-15 17:58:06,823 - C:\Documents and Settings\CTtan\Desktop\TWDB_EAI_TPWD\dbFactory9448 - INFO - Intitializing Database Connection : 10.10.13.77:3108/OD_TPWD
+2010-03-15 17:58:06,823 - C:\Documents and Settings\CTtan\Desktop\TWDB_EAI_TPWD\dbFactory9448 - INFO - DataBase Connection established

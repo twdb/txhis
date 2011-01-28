@@ -1,0 +1,4 @@
+dbsession.query(Sources, VariableMapping, Variables,Units).select_from(join(VariableMapping,Variables).join(Units)).filter(Sources.WSDLLink == "http://riodev/appsWS/HisTpwdCoastal/cuahsi_1_0.asmx?WSDL") .filter(Sources.NetworkName == "TPWD_CoastalWQ").filter(VariableMapping.RemoteVariableCode == "TEM001").one()
+
+
+dbsession.query(Sources).filter(Sources.WSDLLink == "http://ccbay.tamucc.edu/CCBayODWS/cuahsi_1_0.asmx?WSDL ") .filter(Sources.NetworkName == "HRI")

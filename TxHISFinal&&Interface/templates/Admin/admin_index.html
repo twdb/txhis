@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+TxHIS Admin:Models
+{% endblock %}
+
+{% block main %}
+<style type="text/css">
+      @import"/static/stylesheets/admin.css";
+</style>
+
+<div class="wrap">
+<h3>TxHIS Backend Database Models:</h3>
+<table>
+  {% for model in available_models %}
+  	{% if loop.index is even %}
+  		<tr class="even">
+  	{% else %}
+  		<tr class="odd">
+  	{% endif %}
+    	<td><a href="/appsWS/Admin/{{model.__name__}}/?page=1">{{model.__name__}}</a></td>
+  	</tr>
+  {% endfor %}
+</table>
+</div>
+
+{% endblock %}

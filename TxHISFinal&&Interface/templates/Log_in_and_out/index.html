@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if swmis_var.user.fullname %}
+	TxHIS Home for {{ swmis_var.user.fullname }}
+{% else %}
+    TxHIS Home
+{% endif %}
+{% endblock %}
+
+{% block main %}
+<div class="wrap">
+<h3>Available Actions:</h3>
+<table>
+  {% for action in available_actions %}
+	<tr><a href="{{ action.url }}">{{action.name}}</a></tr><br/>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+<logger name="TCEQLogFile" type="logger" format="[%d{yyyy-MM-dd HH:mm:ss,SSS}] %p %m%n" level="INFO" fileName="log/TCEQLog.log" handler="FileAppender" mode="a"/>
+<logger name="TCEQ_console" type="logger" level="DEBUG" handler="ConsoleAppender" />
+</root>

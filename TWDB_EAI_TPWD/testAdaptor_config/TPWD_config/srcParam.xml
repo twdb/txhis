@@ -1,0 +1,3 @@
+<source name="TPWD_Source_Test" type="fileSource" polls="3" pollPeriod="604800" filePath="file_source_TPWD\" fileFilter='*.csv' newExtension='' >
+</source>
+

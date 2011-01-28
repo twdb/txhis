@@ -1,0 +1,14 @@
+label {
+  width: 80px;
+  float: left;
+  font-weight: normal !important;
+  color: #666;  
+  font-size: 12px;
+}
+
+
+label.required {
+    float: left;
+    font-weight: bold !important;
+    color: #333 !important;
+}

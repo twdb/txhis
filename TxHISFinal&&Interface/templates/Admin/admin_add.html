@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+New instance of {{model_name}}
+{% endblock %}
+
+{% block main %}
+<div>
+<style type="text/css">
+      @import"/static/stylesheets/admin.css";
+</style>
+<style type="text/css">
+.add {
+    margin-left:1em;
+    margin-bottom: 0.3em;
+    background: url('/static/icons/add.png');
+}
+.delete {
+    background: url('/static/icons/delete.png');
+    float:left;
+}
+.edit {
+    background: url('/static/icons/edit.png');
+    float:left;
+}
+</style>
+
+<h1>New object of {{model_name}}</h1>
+
+<br />
+
+<fieldset>
+<legend>
+New {{model_name}}
+</legend>
+<form method="POST">
+  {{fs.render()}}
+  <div class="form_controls">
+      <input type="hidden" name="_method" value="POST" />
+      <input type="submit" value="Submit" class="button">
+      <input type="button" value="Cancel" class="button"
+             onclick="javascript:window.location = '/appsWS/Admin/{{model_name}}/'" />
+  </div>
+</form>
+</fieldset>
+
+<div class="error-indication-row">
+	{% if swmis_var.db_message %}
+    <h5>Last database action: {{ swmis_var.db_message }}</h5>
+    {% endif %}
+</div>
+
+{% endblock %}

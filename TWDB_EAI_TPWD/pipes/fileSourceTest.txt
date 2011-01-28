@@ -1,0 +1,2 @@
+2010-03-18 15:35:49,555 - toXML8156 - INFO - (TPWD_Emat_Test) Getting message into pipe
+2010-03-18 15:35:51,430 - toXML8156 - INFO - (TPWD_Emat_Test) Message process is finished in pipe

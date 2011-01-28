@@ -1,0 +1,4 @@
+<sink name="TCEQ_Sink_Test" type="SQLSink" inputFormat="Plain" delimiter='dummy' hasHeader='n' nbThreads='1' >
+<dbFactoryArg dbType="mssql" user='AppHisTceqSwqmisUser' password='A99!5wqm1s' dsn='sqltest/HisTceqSwqmis'
+ driverName='pyodbc' />
+</sink>

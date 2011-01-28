@@ -1,0 +1,5 @@
+2010-01-19 16:40:40,134 - twdbEaiLog5271 - DEBUG - debug message
+2010-01-19 16:40:40,134 - twdbEaiLog5271 - INFO - info message
+2010-01-19 16:40:40,134 - twdbEaiLog5271 - WARNING - warn message
+2010-01-19 16:40:40,134 - twdbEaiLog5271 - ERROR - error message
+2010-01-19 16:40:40,134 - twdbEaiLog5271 - CRITICAL - critical message

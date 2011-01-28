@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://greylin/TxHISCentralRegistry/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="TxHISCentralRegistry" targetNamespace="http://greylin/TxHISCentralRegistry/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://greylin/TxHISCentralRegistry/">
+      <xsd:element name="GetSourcesGEMSS">
+        <xsd:complexType>
+          <xsd:sequence>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetSourcesGEMSSResponse">
+        <xsd:complexType>
+                    <xsd:annotation>
+                    	<xsd:documentation>This is the return type of GetServiceDetails operation. Baisically, it's main message load is  an array of ServiceDetail objects.</xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:sequence>
+          	<xsd:element name="ServiceDetail" type="tns:ServiceDetail" minOccurs="0" maxOccurs="unbounded" nillable="false">
+          		<xsd:annotation>
+          			<xsd:documentation>The GetServiceDetails function would return an array of ServiceDetail object, and each ServiceDetail object is corresponding to one unique network (data source).
+
+Details:
+This array could be empty, eventhough in reality it won't, because its backend database won't be empty.
+The length of this array could potentially be unlimited, eventhough it will have at most 30+- networks/datasets.
+</xsd:documentation>
+          		</xsd:annotation></xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="ServiceDetail">
+      	<xsd:annotation>
+      		<xsd:documentation>
+      			ServiceDetail consists detailed information about a
+      			unique network/datasource, including:
+
+      			SourceURL: A string, indicating any ODM WaterML URL
+      			SourceNetworkName: A string, indicating Network name
+      			of interest on the SourceURL UpdateFrequencyType: A
+      			string, enforced by enumeration of 4 possible types:
+      			Daily, Weekly, Monthly, Adhoc UpdateFrequencyValue: A
+      			string, can be ..., if the update frequency type is
+      			Daily or Monday - Suday if the update frequency type
+      			is Weekly or 1st - 31st if the update frequency type
+      			is Monthly or a specific date, if the update frequency
+      			type is Adhoc, respectively. SourceParameterCodes: An
+      			array of string. Each string indicates an available
+      			parametercode for this particular network.
+      		</xsd:documentation>
+      	</xsd:annotation>
+      	<xsd:sequence>
+      		<xsd:element name="RemoteSourceURL" type="xsd:string"
+      			minOccurs="1" maxOccurs="1" nillable="false">
+      			<xsd:annotation>
+      				<xsd:documentation>
+      					An ODM WaterML web service WSDL URL. Each
+      					network has a unique one ?
+      				</xsd:documentation>
+      			</xsd:annotation>
+      		</xsd:element>
+      		<xsd:element name="SourceFormat" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      		<xsd:element name="RemoteSourceNetWorkName"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      			<xsd:annotation>
+      				<xsd:documentation>
+      					Network name of interest on the source URL.
+      				</xsd:documentation>
+      			</xsd:annotation>
+      		</xsd:element>
+      		<xsd:element name="UpdateFrequencyType" minOccurs="1"
+      			maxOccurs="1">
+
+      			<xsd:simpleType>
+      				<xsd:annotation>
+      					<xsd:documentation>
+      						UpdateFrequencyType, a string can be any
+      						of the 4 values: Daily, Weekly, Monthly,
+      						Ad-Hoc
+      					</xsd:documentation>
+      				</xsd:annotation>
+      				<xsd:restriction base="xsd:string">
+
+
+      					<xsd:enumeration value="Daily"></xsd:enumeration>
+      					<xsd:enumeration value="Weekly"></xsd:enumeration>
+      					<xsd:enumeration value="Monthly"></xsd:enumeration>
+
+
+      					<xsd:enumeration value="Ad-Hoc"></xsd:enumeration>
+      				</xsd:restriction>
+      			</xsd:simpleType>
+      		</xsd:element>
+      		<xsd:element name="UpdateFrequencyValue" type="xsd:string"
+      			minOccurs="1" maxOccurs="1">
+      			<xsd:annotation>
+      				<xsd:documentation>
+      					UpdateFrequencyValue: A string, can be ..., if
+      					the update frequency type is Daily (may be a
+      					time?) or Monday - Suday if the update
+      					frequency type is Weekly or 1st - 31st if the
+      					update frequency type is Monthly or a specific
+      					date, if the update frequency type is Adhoc,
+      					respectively.
+      				</xsd:documentation>
+      			</xsd:annotation>
+      		</xsd:element>
+
+      		<xsd:element name="SourceSummarizedDescription"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+
+      		<xsd:element name="SourceDescriptionLink"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="SourceLogoLink" type="xsd:string"
+      			minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="RemoteSourceParameterCodes"
+      			type="tns:SourceParameterCodesType" minOccurs="1"
+      			maxOccurs="1">
+      			<xsd:annotation>
+      				<xsd:documentation>
+      					This is an array of parameter codes that
+      					corresponds to the source URL. notice this
+      					array must exist, yet its number of
+      					subelements (SourceParameterCodes) can be
+      					potentially 0.
+      				</xsd:documentation>
+      			</xsd:annotation>
+      		</xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="SourceParameterCodesType">
+                <xsd:annotation>
+                	<xsd:documentation>An array of parameter codes that corresponds to the SourceURL.
+Notice this array can have potentially unlimite number of actual parameter code.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+      		<xsd:element name="SourceParameterCode" type="xsd:string" minOccurs="0" maxOccurs="unbounded">
+      			<xsd:annotation>
+      				<xsd:documentation>A String indicating an available parameter code (remote side)  for a this network/datasource.</xsd:documentation>
+      			</xsd:annotation></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="GetTXHISConvertedOutputGEMSS">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="RemoteSourceURL" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="false">
+      				<xsd:annotation>
+      					<xsd:documentation>A string indicating a Source's WSDL address URL.</xsd:documentation>
+      				</xsd:annotation></xsd:element>
+      			<xsd:element name="RemoteSourceNetworkName"
+      				type="xsd:string" minOccurs="1" maxOccurs="1" nillable="false">
+                            <xsd:annotation>
+                            	<xsd:documentation>A string indicating the name of a unique NetworkName.</xsd:documentation>
+                            </xsd:annotation>
+      			</xsd:element>
+                        <xsd:element name="RemoteSourceParameterCode" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="false">
+                            <xsd:annotation>
+                            	<xsd:documentation>A string indicating the Remoteside Parameter Code.</xsd:documentation>
+                            </xsd:annotation>
+      			</xsd:element>
+                        <xsd:element name="RemoteValues" type="tns:ValuesArray" minOccurs="1" maxOccurs="1" nillable="false">
+      				<xsd:annotation>
+      					<xsd:documentation>An array of raw values from the Remote site (WaterML call).
+</xsd:documentation>
+      				</xsd:annotation></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetTXHISConvertedOutputGEMSSResponse">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="TXHISResponseObj" type="tns:TXHISResponseObjType" minOccurs="1" maxOccurs="1">
+      				<xsd:annotation>
+      					<xsd:documentation>Return a so-called string to accomodate C#'s need of "object".</xsd:documentation>
+      				</xsd:annotation></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="ValuesArray">
+      	<xsd:sequence>
+      		<xsd:element name="value" type="xsd:float" minOccurs="1" maxOccurs="1000"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="GetConvertedOutputFault">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="GetConvertedOutputFault"
+      				type="xsd:string">
+      			</xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="TXHISResponseObjType">
+      	<xsd:sequence>
+      		<xsd:element name="TXHISParameterName" type="xsd:string"
+      			minOccurs="1" maxOccurs="1">
+
+      		</xsd:element>
+      		<xsd:element name="TXHISParameterCode" type="xsd:string"
+      			minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="TXHISParameterDescription"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="TXHISParameterUnit"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="TXHISParameterUnitDescription"
+      			type="xsd:string" minOccurs="1" maxOccurs="1">
+      		</xsd:element>
+      		<xsd:element name="TXHISParameterValues" type="tns:ValuesArray" minOccurs="1" maxOccurs="1"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="GetTXHISParameters">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetTXHISParametersResponse">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="ParameterList" type="tns:ParameterArray" minOccurs="1" maxOccurs="1"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="ParameterArray">
+      	<xsd:sequence>
+      		<xsd:element name="ParameterInstance" type="tns:ParameterInfo" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="ParameterInfo">
+      	<xsd:sequence>
+      		<xsd:element name="ParameterCode" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      		<xsd:element name="ParameterName" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="GetRemoteParameterCode">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="SourceNetworkName"
+      				type="xsd:string" maxOccurs="1" minOccurs="1">
+      			</xsd:element>
+      			<xsd:element name="TXHISParameterCode"
+      				type="xsd:string" maxOccurs="1" minOccurs="1">
+      			</xsd:element>
+      			<xsd:element name="WSDLLink" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetRemoteParameterCodeResponse">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="RemoteParameterCode" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetHISParamAvailableSources">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="HISParamCode" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetHISParamAvailableSourcesResponse">
+      	<xsd:complexType>
+      		<xsd:sequence>
+
+      			<xsd:element name="SourceWithParamCodeInstance" type="tns:SourceWithRemoteParamCode" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="SourceWithRemoteParamCode">
+      	<xsd:sequence>
+      		<xsd:element name="WSDLLink" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      		<xsd:element name="SourceName" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+      		<xsd:element name="RemoteParamCode" type="xsd:string" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="GetSourcesGEMSSRequest">
+    <wsdl:part element="tns:GetSourcesGEMSS" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetSourcesGEMSSResponse">
+    <wsdl:part element="tns:GetSourcesGEMSSResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetTXHISConvertedOutputGEMSSRequest">
+  	<wsdl:part name="parameters" element="tns:GetTXHISConvertedOutputGEMSS"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetTXHISConvertedOutputGEMSSResponse">
+  	<wsdl:part name="parameters" element="tns:GetTXHISConvertedOutputGEMSSResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetConvertedOutputFault">
+  	<wsdl:part name="parameters" element="tns:GetConvertedOutputFault"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetTXHISParametersRequest">
+  	<wsdl:part name="parameters" element="tns:GetTXHISParameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetTXHISParametersResponse">
+  	<wsdl:part name="parameters" element="tns:GetTXHISParametersResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetRemoteParameterCodeRequest">
+  	<wsdl:part name="parameters" element="tns:GetRemoteParameterCode"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetRemoteParameterCodeResponse">
+  	<wsdl:part name="parameters" element="tns:GetRemoteParameterCodeResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetHISParamAvailableSourcesRequest">
+  	<wsdl:part name="parameters" element="tns:GetHISParamAvailableSources"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetHISParamAvailableSourcesResponse">
+  	<wsdl:part name="parameters" element="tns:GetHISParamAvailableSourcesResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="TxHISCentralRegistry">
+    <wsdl:operation name="GetSourcesGEMSS">
+      <wsdl:input message="tns:GetSourcesGEMSSRequest"/>
+      <wsdl:output message="tns:GetSourcesGEMSSResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetTXHISConvertedOutputGEMSS">
+    	<wsdl:input message="tns:GetTXHISConvertedOutputGEMSSRequest"></wsdl:input>
+    	<wsdl:output message="tns:GetTXHISConvertedOutputGEMSSResponse"></wsdl:output>
+        </wsdl:operation>
+    <wsdl:operation name="GetTXHISParameters">
+    	<wsdl:input message="tns:GetTXHISParametersRequest"></wsdl:input>
+    	<wsdl:output message="tns:GetTXHISParametersResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRemoteParameterCode">
+    	<wsdl:input message="tns:GetRemoteParameterCodeRequest"></wsdl:input>
+    	<wsdl:output message="tns:GetRemoteParameterCodeResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetHISParamAvailableSources">
+    	<wsdl:input message="tns:GetHISParamAvailableSourcesRequest"></wsdl:input>
+    	<wsdl:output message="tns:GetHISParamAvailableSourcesResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="TxHISCentralRegistrySOAP"
+  	type="tns:TxHISCentralRegistry">
+
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+  	<wsdl:operation name="GetSourcesGEMSS">
+
+  		<soap:operation
+  			soapAction="http://greylin/TxHISCentralRegistry/GetSourcesGEMSS" />
+  		<wsdl:input>
+
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="GetTXHISConvertedOutputGEMSS">
+
+  		<soap:operation
+  			soapAction="http://greylin/TxHISCentralRegistry/GetTXHISConvertedOutputGEMSS" />
+  		<wsdl:input>
+
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="GetTXHISParameters">
+
+  		<soap:operation
+  			soapAction="http://greylin/TxHISCentralRegistry/GetTXHISParameters" />
+  		<wsdl:input>
+
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="GetRemoteParameterCode">
+
+  		<soap:operation
+  			soapAction="http://greylin/TxHISCentralRegistry/GetRemoteParameterCode" />
+  		<wsdl:input>
+
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="GetHISParamAvailableSources">
+  		<soap:operation
+  			soapAction="http://greylin/TxHISCentralRegistry/GetHISParamAvailableSources" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="TxHISCentralRegistry">
+    <wsdl:port binding="tns:TxHISCentralRegistrySOAP" name="TxHISCentralRegistrySOAP">
+      <soap:address location="http://greylin:9080/HISCentralService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

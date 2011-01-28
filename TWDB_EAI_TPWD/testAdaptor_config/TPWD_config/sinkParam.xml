@@ -1,0 +1,4 @@
+<sink name="TPWD_Sink_Test" type="SQLSink" inputFormat="XML" delimiter='dummy' hasHeader='n' nbThreads='1' >
+<dbFactoryArg dbType="mssql" user='testaaa' password='12345678a' dsn='localhost:3108/OD_TPWD'
+ driverName='pyodbc' />
+</sink>

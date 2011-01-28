@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+TxHIS Database Model: {{model_name}}
+{% endblock %}
+
+
+{% block main %}
+<div>
+<style type="text/css">
+      @import"/static/stylesheets/admin.css";
+</style>
+<style type="text/css">
+.add {
+    margin-left:1em;
+    margin-bottom: 0.3em;
+    background: url('/static/icons/add.png');
+}
+.delete {
+    background: url('/static/icons/delete.png');
+    float:left;
+}
+.edit {
+    background: url('/static/icons/edit.png');
+    float:left;
+}
+</style>
+
+<h1>{{model_name}}</h1>
+
+<br />
+
+{% if clsnames %}
+<div id="sidebar">
+	<div class="box">
+	<h2>Related types'</h2>
+	  <table>
+	  {% for clsname in clsnames %}
+	    <tr><td><a href="/appsWS/Admin/{{clsname}}/?page=1">{{clsname}}</a></td></tr>
+	  {% endfor %}
+	  </table>
+	</div>
+</div>
+{% endif %}
+
+<div class="box">
+<h2>Existing objects</h2>
+	<table>
+	  {{grid.render()}}
+	</table>
+	<div id="pager">{{page.pager()}}</div>
+	<a class="icon add" title="New object" href="/appsWS/Admin/{{model_name}}/add">New object</a>
+    
+    <div class="error-indication-row">
+	{% if swmis_var.db_message %}
+    <h5>Last database action: {{ swmis_var.db_message }}</h5>
+    {% endif %}
+	</div>
+</div>
+
+{% endblock %}

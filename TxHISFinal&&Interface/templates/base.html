@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <title>{% block title %}{% endblock %}</title>
+               {% block extra %}{% endblock %}
+    </head>
+    
+    <body>
+    <div id="pagebody">
+        <div id="banner-swr"> 
+           <a href="http://www.twdb.state.tx.us/home/index.asp" title="link to TWDB homepage"><img class="floatleft" src="/static/images/swr/twdbseal.gif" width="100" height="100" alt="TWDB Seal" border="none" /></a>
+           <h1 class="banner">Texas Central Hydrology Information System</h1>
+        </div>
+
+
+        <div id="container">
+            <div id="header" class="clearfix">
+                <div class="user-info">
+                    <p>Welcome {{swmis_var.user.username}} |
+                    <a href="/appsWS">Home</a> |
+                    <a href="/appsWS/login">Login</a> |
+                    <a href="/appsWS/Admin">Admin</a> |
+                    <a href="/appsWS/logout">Logout</a>     
+                    </p>
+                </div>
+            </div>
+            <div id="wrapper" class="clearfix">
+                <div id="nav">
+                </div>
+                <div id="main" class="clearfix">
+                    {% block main %}
+                    {% endblock %}
+                </div>
+            </div>
+            <div id="pagefooter">
+                <p id="copyright">
+                Created with <a href="http://www.webpy.org">webpy</a> |
+                <a href="http://www.opensource.org/licenses/bsd-license.php">BSD License</a> |
+                </p>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>

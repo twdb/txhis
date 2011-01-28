@@ -1,0 +1,9 @@
+2010-03-29 16:31:39,207 - fileSource3926 - INFO - ( fileSourceTest ) Intitializing fileSource
+2010-03-29 16:31:39,207 - fileSource3926 - INFO - ( fileSourceTest ) Starting the source adaptor
+2010-03-29 16:31:39,207 - fileSource3926 - INFO - ( fileSourceTest ) Messages Left on queue of adaptor : 2
+2010-03-29 16:31:39,207 - fileSource3926 - INFO - ( fileSourceTest ) Retrieving file : EMat_201003240743.csv
+2010-03-29 16:31:41,910 - fileSource3926 - INFO - ( fileSourceTest ) Commiting msg EMat_201003240743.csv on source : fileSourceTest
+2010-03-29 16:31:41,910 - fileSource3926 - INFO - ( fileSourceTest ) Messages Left on queue of adaptor : 1
+2010-03-29 16:31:41,910 - fileSource3926 - INFO - ( fileSourceTest ) Retrieving file : gulf_201003240749.csv
+2010-03-29 16:31:47,661 - fileSource3926 - INFO - ( fileSourceTest ) Commiting msg gulf_201003240749.csv on source : fileSourceTest
+2010-03-29 16:31:47,661 - fileSource3926 - INFO - ( fileSourceTest ) Sources dry on source 

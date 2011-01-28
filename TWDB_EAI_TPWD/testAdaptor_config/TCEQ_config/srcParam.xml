@@ -1,0 +1,4 @@
+<source name="TCEQ_Source_Test" type="HTTPSource" pollPeriod="604800"
+        URL="http://www.tceq.state.tx.us/cgi-bin/compliance/monops/crp/sampquery.pl">
+</source>
+
