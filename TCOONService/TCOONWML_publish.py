@@ -5,5 +5,5 @@ from datetime import datetime
 
 if __name__ == "__main__":
     print "Starting TCOON WaterML Server...."
-    port = 9080
+    port = 9090
     AsServer(port,(WaterOneFlowServiceImpl('TCOONWaterML'),))

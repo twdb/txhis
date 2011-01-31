@@ -1,6 +1,6 @@
 from cuashi import *
 from variable_info import *
-from backEndhttpReqConstruct import getTCOONValues,getTCOONParamList
+from backEndhttpReqConstruct import getTCOONValues,getTCOONParamList,parseSOS
 
 #generate queryInfo node:this piece of crap add criteria inside of an 
 #                        queryInfo node
@@ -61,12 +61,12 @@ def genSite_forGetSite(parent_Node,xmlNode,key,name,srsInfo,siteList):
 def generateQueryInfo_string(locationparam):
     #set location parameters
     criteriaInstance = criteria()
-    if type(locationparam) not in [type(""), type(u'')]:
+    if type(locationparam) != type(""):
         try: 
             locationparam = '?'.join(locationparam._string)
         except:
             locationparam = ""
-    criteriaInstance.set_locationParam(str(locationparam))
+    criteriaInstance.set_locationParam(locationparam)
     #set the return query info parameter
     queryInfo = QueryInfoType()
     queryInfo.set_criteria(criteriaInstance)
@@ -76,17 +76,16 @@ def generateQueryInfo_string(locationparam):
 def generateSiteInfo_string(xmlNode,srsInfo):
     SiteInfoNode = SiteInfoType()
     #set site name
-    SiteInfoNode.set_siteName(xmlNode[4].text.split(":")[1].strip())
+    SiteInfoNode.set_siteName(xmlNode[4].text.split(":")[1])
     #set site code
     siteCodeNode = siteCode()
-    siteCodeNode.setValueOf_(xmlNode[4].text.split(":")[0])
     siteCodeNode.set_network("TCOON")
     siteCodeNode.set_siteID(xmlNode[4].text.split(":")[0])
     SiteInfoNode.set_siteCode([siteCodeNode])
     #timezone info set
     timeZoneInfoNode = timeZoneInfo()
     timeZoneInfoNode.set_defaultTimeZone("UTC")
-    timeZoneInfoNode.set_daylightSavingsTimeZone("Unknown")
+    timeZoneInfoNode.set_daylightSavingsTimeZone("Unkown")
     SiteInfoNode.set_timeZoneInfo(timeZoneInfoNode)
     #set geolocation
     geoLocationNode = geoLocation()
@@ -100,10 +99,10 @@ def generateSiteInfo_string(xmlNode,srsInfo):
     #set node here         
     SiteInfoNode.set_geoLocation(geoLocationNode)
     SiteInfoNode.set_verticalDatum(xmlNode[7].text)
-    #countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
+    countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
     stateNote = NoteType(title='State',valueOf_='Texas')
     commentNote = NoteType(title='Comment',valueOf_=xmlNode[15].text)
-    SiteInfoNode.set_note([stateNote,commentNote])
+    SiteInfoNode.set_note([countyNote,stateNote,commentNote])
     return SiteInfoNode
 
 #generate series node: to be compelted
@@ -171,7 +170,6 @@ def generateSeriesNode(xmlNode):
     seriesNode.set_Method(MethodNode)
     #Source element
     sourceNode = SourceType()
-    sourceNode.set_sourceID(1)
     sourceNode.set_Organization("TCOON")
     sourceNode.set_SourceDescription('Texas Coastal Ocean Observation Network')
     seriesNode.set_Source(sourceNode)
@@ -180,74 +178,6 @@ def generateSeriesNode(xmlNode):
     qcLevelNode.set_qualityControlLevelID(-9999)
     seriesNode.set_QualityControlLevel(qcLevelNode)
     return seriesNode
-
-def generateSeriesNodeObj(xmlNode,parentNode):
-    seriesNode = parentNode.new_series()
-    variableNode = seriesNode.new_variable()
-    #get property of this variable
-    variableCodeInfoSet = variable_Dictionary[name_to_code_mappingDictionary[xmlNode[2].text]]
-    variableCodeNode = variableNode.new_variableCode(variableCodeInfoSet['variableCode'])
-    variableCodeNode._attrs = dict([('vocabulary',"TCOON"),('default','true'),('variableID',variableCodeInfoSet['variableID'])])
-    variableNode.set_element_variableCode([variableCodeNode])
-    #set variable name
-    variableNode.set_element_variableName(variableCodeInfoSet["variableName"])
-    #set value type
-    variableNode.set_element_valueType("Field Observation")
-    #set value data type
-    variableNode.set_element_dataType("Unknown")
-    #set general Category
-    variableNode.set_element_generalCategory("Hydrology")
-    #set sample medium
-    variableNode.set_element_sampleMedium(variableCodeInfoSet['medium'])
-    #set units element
-    unitsNode = variableNode.new_units(variableCodeInfoSet['units']["name"])
-    attributeDictionary = [('unitsAbbreviation',variableCodeInfoSet['units']['abbr']),
-                           ('unitsCode',variableCodeInfoSet['units']['unitsCode'])]
-    if variableCodeInfoSet['units'].has_key("unitsType"):
-        attributeDictionary.append(('unitsType',variableCodeInfoSet['units']["unitsType"]))
-    unitsNode._attrs = dict(attributeDictionary)
-    variableNode.set_element_units(unitsNode)
-    variableNode.set_element_NoDataValue("-9999")
-    timeSupportNode = variableNode.new_timeSupport()
-    timeSupportNode._attrs = dict([('isRegular',False)])
-    variableNode.set_element_timeSupport(timeSupportNode)
-    #series Node
-    seriesNode.set_element_variable(variableNode)
-    #Time Peiod
-    variableTimeIntervalNode = seriesNode.new_variableTimeInterval()
-    from datetime import datetime,timedelta
-    UTCOffset = timedelta(hours=float(6))
-    #adjust xml ZULU time to CST time
-    if not xmlNode[10].text:
-        startTime = datetime.now()-timedelta(years=float(50))+UTCOffset
-    else:
-        startTime = datetime.strptime(xmlNode[10].text,'%Y-%m-%dT%H:%M:%SZ')+UTCOffset
-        #startTimeStr = "T".join(str(startTime).split())
-    if not xmlNode[11].text:
-        endTime = datetime.now()
-    else:
-        endTime = datetime.strptime(xmlNode[11].text,'%Y-%m-%dT%H:%M:%SZ')+UTCOffset
-        #endTimeStr = "T".join(str(endTime).split())
-    if startTime:
-        variableTimeIntervalNode._beginDateTime = startTime.timetuple()
-    if endTime:
-        variableTimeIntervalNode._endDateTime = endTime.timetuple()
-    seriesNode.set_element_variableTimeInterval(variableTimeIntervalNode)
-    #Method lement
-    MethodNode = seriesNode.new_Method()
-    MethodNode._attrs = dict(methodID = 0)
-    MethodNode.set_element_MethodDescription("No method specified")
-    seriesNode.set_element_Method(MethodNode)
-    #Source element
-    sourceNode = seriesNode.new_Source()
-    sourceNode.set_element_Organization("TCOON")
-    sourceNode.set_element_SourceDescription('Texas Coastal Ocean Observation Network')
-    seriesNode.set_element_Source(sourceNode)
-    #Quality Control ID
-    qcLevelNode = seriesNode.new_QualityControlLevel("")
-    qcLevelNode._attrs = dict(QualityControlLevelID = -9999)
-    seriesNode.set_element_QualityControlLevel(qcLevelNode)
-    return seriesNode  
     
 #generate variable node string version (using generatedDS)
 def generateVariableTypeNodeString(key,variableKeyedValue):
@@ -322,29 +252,42 @@ def generateSeriesValueList(siteCode,variableCode,startDate,endDate):
     valuesNode.set_unitsCode(variable_Dictionary[variableCode]['units']['unitsCode'])
     qurey = getTCOONParamList(siteCode,variableCode,startDate,endDate)
     outPutStringIO = getTCOONValues(qurey)
-    line = outPutStringIO.readline()
     valueSingleNodeList = []
-    while line:
+    parseResult = parseSOS(outPutStringIO)
+    for row in parseResult[1].split():
         #generate value node here
-        if line.startswith("#"):
-            line = outPutStringIO.readline() 
-            continue
-        else:
-            import time
-            datetimeString,realValue = line.split()
-            #format datetime string
-            fmtDateTimeString = time.strftime("%Y-%m-%dT%H:%M:%S", \
-                                              time.strptime(datetimeString,"%Y%j+%H%M"))
-            if realValue == "NA":
-                realValue = "-9999"
-            valueSingleNode = ValueSingleVariable()
-            valueSingleNode.set_censorCode("nc")
-            valueSingleNode.set_qualityControlLevel("-9999")
-            valueSingleNode.set_dateTime(fmtDateTimeString)
-            valueSingleNode.set_methodID(0)
-            valueSingleNode.set_sourceID(1)
-            valueSingleNode.setValueOf_(realValue)
-            valueSingleNodeList.append(valueSingleNode)
-            line = outPutStringIO.readline()
+        csvReturn = row.split(',')
+        import time
+        datetimeString,realValue = csvReturn[1],csvReturn[5]
+        valueSingleNode = ValueSingleVariable()
+        valueSingleNode.set_censorCode("nc")
+        valueSingleNode.set_qualityControlLevel("-9999")
+        valueSingleNode.set_dateTime(datetimeString)
+        valueSingleNode.set_methodID(0)
+        valueSingleNode.set_sourceID(1)
+        valueSingleNode.setValueOf_(realValue)
+        valueSingleNodeList.append(valueSingleNode)
+#    while line:
+#        #generate value node here
+#        if line.startswith("#"):
+#            line = outPutStringIO.readline() 
+#            continue
+#        else:
+#            import time
+#            datetimeString,realValue = line.split()
+#            #format datetime string
+#            fmtDateTimeString = time.strftime("%Y-%m-%dT%H:%M:%S", \
+#                                              time.strptime(datetimeString,"%Y%j+%H%M"))
+#            if realValue == "NA":
+#                realValue = "-9999"
+#            valueSingleNode = ValueSingleVariable()
+#            valueSingleNode.set_censorCode("nc")
+#            valueSingleNode.set_qualityControlLevel("-9999")
+#            valueSingleNode.set_dateTime(fmtDateTimeString)
+#            valueSingleNode.set_methodID(0)
+#            valueSingleNode.set_sourceID(1)
+#            valueSingleNode.setValueOf_(realValue)
+#            valueSingleNodeList.append(valueSingleNode)
+#            line = outPutStringIO.readline()
     valuesNode.set_value(valueSingleNodeList) 
     return valuesNode

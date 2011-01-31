@@ -1,4 +1,6 @@
 from xml.etree import cElementTree
+from xml.sax import make_parser
+from xml.sax.handler import ContentHandler
 from cStringIO import StringIO
 from urllib import urlencode
 import urllib2
@@ -123,24 +125,69 @@ def buildSiteInfo_siteDictionary(treeIter,siteInfo_site_dict):
 # Input: siteCode, variableCode, startingDate, endingDate
 # output: an encoded URL string for constructing a GET HTTP request
 def getTCOONParamList(siteCode,variableCode,startDate,endDate):
-    data = { "whentz":"CST6CDT",\
-             "-action":"c", "unit":"metric", "elev":"stnd"
-            }
-    data["stnlist"] = siteCode
-    data["serlist"] = variableCode
-    data["when"] = "-".join([time.strftime("%m/%d/%Y",time.strptime(startDate,"%Y-%m-%d")),
-                             time.strftime("%m/%d/%Y",time.strptime(endDate,"%Y-%m-%d"))])
+    var_code_maping = {"wtp":"water_temperature",
+                         "atp":"air_temperature",
+                         "bpr":"air_pressure",
+                         # water level is not working
+                         #"pwl":"water_level",
+                         "wsd":"wind_speed",
+                         #"do":"dissolved_oxygen",
+                         "sal":"salinity",
+                         ## more to be continued
+                         }
+    data = {}
+    data["offering"] = siteCode
+    data['request']= "GetObservation"
+    data["observedproperty"] = var_code_maping[variableCode]
+    data["eventtime"] = "/".join([time.strftime("%Y-%m-%dT%H:%M:%SZ",time.strptime(startDate,"%Y-%m-%d %H:%M:%S")),
+                             time.strftime("%Y-%m-%dT%H:%M:%SZ",time.strptime(endDate,"%Y-%m-%d %H:%M:%S"))])
     return urlencode(data)
 
 # get the value response for a certain HTTP request
 # input: an encoded URL string (for GET HTTP request
 # output: a StringIO containing all the data.
 def getTCOONValues(urlendata):
-    fullurl = "?".join(["http://lighthouse.tamucc.edu/cgi-bin/pd.cgi",urlendata])
+    fullurl = "?".join(["http://lighthouse.tamucc.edu/sos",urlendata])
     req = urllib2.Request(fullurl)
     response = urllib2.urlopen(req)
     output = StringIO(response.read())
     return output
+
+class SOSHandler(ContentHandler):
+    """
+    A handler to deal with SOS RPC return call in XML
+    """
+    inValueCount = 0
+    inValues = 0
+    findValueCount = 0
+    #findValuesString = 0
+    recordsCount = ""
+    valuesString = ""
+    def startElement(self, name, attrs):
+        if name == "swe:Count":
+            self.inValueCount = 1
+        elif name == "swe:values":
+            self.inValues = 1
+            #findValuesString = 1
+    
+    def characters(self, characters):
+        if self.inValueCount:
+            self.recordsCount += characters.strip()
+        elif self.inValues:
+            self.valuesString += characters.strip()
+        
+    def endElement(self, name):
+        if name == "swe:Count":
+            self.inValueCount = 0
+        if name == "swe:values":
+            self.inValues = 0          
+
+def parseSOS(stream):
+    saxparser = make_parser()
+    ctHandler = SOSHandler()
+    saxparser.setContentHandler(ctHandler)
+    saxparser.parse(stream)
+    return (ctHandler.recordsCount, ctHandler.valuesString)
 
 # return the URL query string for a TCOON site
 # input: siteCode, variableCode, startingDate, endingDate

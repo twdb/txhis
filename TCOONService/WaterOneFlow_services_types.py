@@ -1387,17 +1387,8 @@ class ns1:
             class Holder:
                 __metaclass__ = pyclass_type
                 typecode = self
-                def __init__(self,typeIndicator="Inteval"):
+                def __init__(self):
                     # pyclass
-                    if (typeIndicator=="Inteval"):
-                        TClist = [ZSI.TCtimes.gDateTime(pname=(ns,"beginDateTime"), aname="_beginDateTime", minOccurs=1, maxOccurs=1, nillable=False, typed=False, encoded=kw.get("encoded")), ZSI.TCtimes.gDateTime(pname=(ns,"endDateTime"), aname="_endDateTime", minOccurs=1, maxOccurs=1, nillable=False, typed=False, encoded=kw.get("encoded"))]               
-                        self.typecode.setDerivedTypeContents(restrictions=TClist)
-                        self._beginDateTime=None
-                        self._endDateTime=None
-                    elif (typeIndicator=="Single"):
-                        TClist = [ZSI.TCtimes.gDateTime(pname=(ns,"timeSingle"), aname="_timeSingle", minOccurs=1, maxOccurs=1, nillable=False, typed=False, encoded=kw.get("encoded")), ZSI.TCtimes.gDateTime(pname=(ns,"beginDateTime"), aname="_beginDateTime", minOccurs=1, maxOccurs=1, nillable=False, typed=False, encoded=kw.get("encoded")), ZSI.TCtimes.gDateTime(pname=(ns,"endDateTime"), aname="_endDateTime", minOccurs=1, maxOccurs=1, nillable=False, typed=False, encoded=kw.get("encoded"))]
-                        self.typecode.setDerivedTypeContents(restrictions=TClist)
-                        pass
                     return
             Holder.__name__ = "TimePeriodType_Holder"
             self.pyclass = Holder

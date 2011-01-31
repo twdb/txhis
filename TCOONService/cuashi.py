@@ -3207,7 +3207,7 @@ class LatLonPointType(GeogLocationType):
     def export(self, outfile, level, namespace_='', name_='LatLonPointType', namespacedef_=''):
         #adjust the tag name for this xml element       
         if self.superclass.subclass == self.__class__:
-            name_ = "geogLocation"
+            name_ = "geogLocationType"
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='LatLonPointType')
@@ -4834,10 +4834,10 @@ class VariablesResponseType(GeneratedsSuper):
     def set_queryInfo(self, queryInfo): self.queryInfo = queryInfo
     def get_variables(self): return self.variables
     def set_variables(self, variables): self.variables = variables
-    def export(self, outfile, level, namespace_='', name_='variablesResponse', namespacedef_=''):
+    def export(self, outfile, level, namespace_='', name_='VariablesResponseType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='variablesResponse')
+        self.exportAttributes(outfile, level, namespace_, name_='VariablesResponseType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4845,9 +4845,9 @@ class VariablesResponseType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='variablesResponse'):
+    def exportAttributes(self, outfile, level, namespace_='', name_='VariablesResponseType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='variablesResponse'):
+    def exportChildren(self, outfile, level, namespace_='', name_='VariablesResponseType'):
         if self.queryInfo:
             self.queryInfo.export(outfile, level, namespace_, name_='queryInfo', )
         if self.variables:
@@ -4860,7 +4860,7 @@ class VariablesResponseType(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='variablesResponse'):
+    def exportLiteral(self, outfile, level, name_='VariablesResponseType'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4918,10 +4918,10 @@ class TimeSeriesResponseType(GeneratedsSuper):
     def set_queryInfo(self, queryInfo): self.queryInfo = queryInfo
     def get_timeSeries(self): return self.timeSeries
     def set_timeSeries(self, timeSeries): self.timeSeries = timeSeries
-    def export(self, outfile, level, namespace_='', name_='timeSeriesResponse', namespacedef_=''):
+    def export(self, outfile, level, namespace_='', name_='TimeSeriesResponseType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='timeSeriesResponse')
+        self.exportAttributes(outfile, level, namespace_, name_='TimeSeriesResponseType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4929,9 +4929,9 @@ class TimeSeriesResponseType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='timeSeriesResponse'):
+    def exportAttributes(self, outfile, level, namespace_='', name_='TimeSeriesResponseType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='timeSeriesResponse'):
+    def exportChildren(self, outfile, level, namespace_='', name_='TimeSeriesResponseType'):
         if self.queryInfo:
             self.queryInfo.export(outfile, level, namespace_, name_='queryInfo', )
         if self.timeSeries:
@@ -4944,7 +4944,7 @@ class TimeSeriesResponseType(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='timeSeriesResponse'):
+    def exportLiteral(self, outfile, level, name_='TimeSeriesResponseType'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5007,10 +5007,10 @@ class SiteInfoResponseType(GeneratedsSuper):
     def set_site(self, site): self.site = site
     def add_site(self, value): self.site.append(value)
     def insert_site(self, index, value): self.site[index] = value
-    def export(self, outfile, level, namespace_='', name_='sitesResponse', namespacedef_=''):
+    def export(self, outfile, level, namespace_='', name_='SiteInfoResponseType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='sitesResponse')
+        self.exportAttributes(outfile, level, namespace_, name_='SiteInfoResponseType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5018,9 +5018,9 @@ class SiteInfoResponseType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='sitesResponse'):
+    def exportAttributes(self, outfile, level, namespace_='', name_='SiteInfoResponseType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='sitesResponse'):
+    def exportChildren(self, outfile, level, namespace_='', name_='SiteInfoResponseType'):
         if self.queryInfo:
             self.queryInfo.export(outfile, level, namespace_, name_='queryInfo', )
         for site_ in self.site:
@@ -5033,7 +5033,7 @@ class SiteInfoResponseType(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='sitesResponse'):
+    def exportLiteral(self, outfile, level, name_='SiteInfoResponseType'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
