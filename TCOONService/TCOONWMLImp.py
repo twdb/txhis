@@ -1,4 +1,4 @@
-#!/usr/bin/python
+	#!/usr/bin/python
 from WaterOneFlow_services_server import *
 from WaterOneFlow_services_types import *
 from backEndhttpReqConstruct import *
@@ -20,7 +20,8 @@ import cStringIO
 ###########################################################################
 siteInfo_site_dictionary={"__modTime":datetime.now()}
 ###########################################################################
-WSDLAddress = "http://greyline:8080/waterML?wsdl"
+WSDLAddress = "http://midgewater.twdb.state.tx.us/WMLWS/TCOONWML?wsdl"
+WS_PATH = "TCOONWML"
 
 #service implementation
 class WaterOneFlowServiceImpl(WaterOneFlow):
@@ -49,7 +50,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('./semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -115,7 +116,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('./semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -139,6 +140,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             strSiteCodeList = [i for i in strSiteCodeList if i]
             #site List array (if multiple sites)
             siteList = []
+            # read this logic:
             #if input is empty, return all the Sites as the response
             if (not siteCodeList.get_element_string() or (not siteCodeList.get_element_string()[0] 
                     and len(siteCodeList.get_element_string())==1)):
@@ -153,7 +155,12 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             siteResponse.set_site(siteList) 
             siteResponseString = cStringIO.StringIO()                               
             siteResponse.export(siteResponseString, 0, \
-                                     namespacedef_='xmlns:ns2="http://www.cuahsi.org/waterML/1.0/"')        
+                                     namespacedef_=' '.join(['xmlns:gml="http://www.opengis.net/gml"',
+                                                   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
+                                                   'xmlns:xlink="http://www.w3.org/1999/xlink"',
+                                                   'xmlns:wtr="http://www.cuahsi.org/waterML/"',
+                                                   'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
+                                                   'xmlns="http://www.cuahsi.org/waterML/1.0/"']))        
             rsp.set_element_GetSitesXmlResult(siteResponseString.getvalue())
         except Exception, e:
             import traceback
@@ -180,7 +187,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('./semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -223,7 +230,12 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                 siteResponseString = cStringIO.StringIO()
                 #                                
                 siteResponse.export(siteResponseString, 0, \
-                                     namespacedef_='xmlns:ns2="http://www.cuahsi.org/waterML/1.0/"')
+                                     namespacedef_=' '.join(['xmlns:gml="http://www.opengis.net/gml"',
+                                                   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
+                                                   'xmlns:xlink="http://www.w3.org/1999/xlink"',
+                                                   'xmlns:wtr="http://www.cuahsi.org/waterML/"',
+                                                   'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
+                                                   'xmlns="http://www.cuahsi.org/waterML/1.0/"']))
                 rsp.set_element_GetSiteInfoResult(siteResponseString.getvalue()) 
                 #generating corresponding WaterML xml string here    
         #here, how to generate a fault!!!           
@@ -237,14 +249,77 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                     detail.any = e.detail            
                 rsp = FaultType(e.code, e.string, e.actor, detail)
         return rsp
+    #GetSiteInfoObj method
+    def soap_GetSiteInfoObject(self, ps):
+        """
+        implementation of the "GetSiteInfoObject" operation
+        """
+        try:
+            rsp = WaterOneFlow.soap_GetSiteInfoObject(self,ps)
+            request = self.request
+            #construct/renew the siteInfo_site_dictionary.
+            #currently, renew it every 14 days (subject to change)?
+            if(len(siteInfo_site_dictionary.keys())==1 or 
+                    datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
+                #here has a possible race condition, so a lock is placed
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                lock(semaphore, LOCK_EX)
+                treeIter = getIterator(centralRegUrl)
+                #save the srs information in dictionary
+                buildSiteInfo_siteDictionary(treeIter,siteInfo_site_dictionary)
+                siteInfo_site_dictionary["__modTime"]=datetime.now()
+                #close semaphore, release the lock file. (otherwise deadlock will be possible)
+                semaphore.close()
+            #get input parameter, save it in a string siteCode.
+            siteCodeArray = map(str, request.get_element_site().split(":"))
+            #print len(siteInfo_site_dictionary["001"][1])
+            if  len(siteCodeArray) < 2 or\
+                    not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
+                    not siteCodeArray[0].upper() == "TCOON":
+                fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
+                raise fault
+            else:
+                #construct siteResponseNode XML node    
+                siteResponseNode = rsp.new_sitesResponse()
+                #construct the queryInfo XML node part. It is ofen used, so make it a function
+                genQueryInfo(siteResponseNode,"location",','.join(siteCodeArray))                       
+                #site List array (if multiple sites)
+                siteList = []
+                try:
+                    genSite_forGetSite(siteResponseNode,siteInfo_site_dictionary[siteCodeArray[1]][1][0],
+                                                siteCode,siteInfo_site_dictionary[siteCodeArray[1]][0],siteInfo_site_dictionary['srs'],siteList)
+                except:
+                    fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))    
+                    raise fault
+            #seriesCatalog node
+            seriesCatalogNode = siteList[0].new_seriesCatalog()
+            seriesCatalogNode._attrs = dict(menuGroupName="TCOON Observation Data", serviceWsdl = WSDLAddress) 
+            #here, to be completed
+            seriresList = []
+            for xmlNode in siteInfo_site_dictionary[siteCodeArray[1]][1]:
+                seriresList.append(generateSeriesNodeObj(xmlNode,seriesCatalogNode))
+            seriesCatalogNode.set_element_series(seriresList)
+            siteList[0].set_element_seriesCatalog([seriesCatalogNode])
+            siteResponseNode.set_element_site(siteList) 
+            rsp.set_element_sitesResponse(siteResponseNode)                       
+        #here, how to generate a fault!!!           
+        except Exception, e:
+            import traceback
+            traceback.print_exc(file=sys.stdout) 
+            if isinstance(e,Fault):
+                detail = None
+                if e.detail is not None: 
+                    detail = Detail()
+                    detail.any = e.detail            
+                rsp = FaultType(e.code, e.string, e.actor, detail)
+        return rsp
+            
     #GetVariableInfo method
     def soap_GetVariableInfo(self, ps):
         """
         implementation of the "GetVariableInfo" operation
         """
         try:
-            #this code is just for deploying on apache
-            #httpReq = kw['request']
             rsp = WaterOneFlow.soap_GetVariableInfo(self,ps)
             request = self.request
             variableCodeArray = map(str, request.get_element_variable().split(":"))
@@ -270,7 +345,12 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             variableResponseString = cStringIO.StringIO()
             #                                
             variableResponseNode.export(variableResponseString, 0, \
-                                     namespacedef_='xmlns:ns2="http://www.cuahsi.org/waterML/1.0/"')
+                                     namespacedef_=' '.join(['xmlns:gml="http://www.opengis.net/gml"',
+                                                   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
+                                                   'xmlns:xlink="http://www.w3.org/1999/xlink"',
+                                                   'xmlns:wtr="http://www.cuahsi.org/waterML/"',
+                                                   'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
+                                                   'xmlns="http://www.cuahsi.org/waterML/1.0/"']))
             rsp.set_element_GetVariableInfoResult(variableResponseString.getvalue())
         #here, how to generate a fault!!!           
         except Exception, e:
@@ -324,7 +404,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
         return rsp
     def soap_GetValues(self,ps):
         """
-        implementation of the "GetVariableInfo" operation
+        implementation of the "GetValues" operation
         """
         try:
             #this code is just for deploying on apache
@@ -341,7 +421,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('./semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -364,10 +444,15 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                     not variableCodeArray[0].upper() == "TCOON":
                 fault = Fault(Fault.Client, "Illegal VariableCode", actor="Variable", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
                 raise fault
+            #preprocessing passing-in time
+            if startDate == "":
+                startDate = (datetime.now()-timedelta(years=float(100))).__str__()
+            if endDate == "":
+                endDate = datetime.now().__str__()              
             #time format validation
             try:
-                time.strptime(startDate,"%Y-%m-%d %H:%M:%S")
-                time.strptime(endDate,"%Y-%m-%d %H:%M:%S")
+                time.strptime(startDate,"%Y-%m-%d")
+                time.strptime(endDate,"%Y-%m-%d")
             except:
                 fault = Fault(Fault.Client, "Illegal start/end Date", actor="startDate/endDate", \
                                   detail="The format of starDate/endDate string is illegal, please use format 'YYYY-MM-DD HH:MM:S'(CST timezone) error startDate: %s   erro endDate: %s " %(startDate,endDate))
@@ -398,13 +483,14 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             timeSeriesNode = TimeSeriesType()
             SourceInfoType.subclass = SiteInfoType
             sourceInfoNode = SourceInfoType.factory()
-            sourceInfoNode.set_siteName(siteInfo_site_dictionary[siteCodeArray[1]][0])
+            sourceInfoNode.set_siteName(siteInfo_site_dictionary[siteCodeArray[1]][0].strip())
             #get any of the xmlNode
             xmlNode = siteInfo_site_dictionary[siteCodeArray[1]][1][0]
             #set site code
             siteCodeNode = siteCode()
             siteCodeNode.set_network("TCOON")
             siteCodeNode.set_siteID(xmlNode[4].text.split(":")[0])
+            siteCodeNode.setValueOf_(xmlNode[4].text.split(":")[0])
             sourceInfoNode.set_siteCode([siteCodeNode])
             ##
             timeZoneInfoNode = timeZoneInfo()
@@ -423,10 +509,10 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #set node here         
             sourceInfoNode.set_geoLocation(geoLocationNode)
             sourceInfoNode.set_verticalDatum(xmlNode[7].text)
-            countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
+            #countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
             stateNote = NoteType(title='State',valueOf_='Texas')
             commentNote = NoteType(title='Comment',valueOf_=xmlNode[15].text)
-            sourceInfoNode.set_note([countyNote,stateNote,commentNote])
+            sourceInfoNode.set_note([stateNote,commentNote])
             timeSeriesNode.set_sourceInfo(sourceInfoNode)
             ###################################################
             #variable node
@@ -446,9 +532,107 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             timeSeriesResponseString = cStringIO.StringIO()
             #export the xml string                                 
             timeSeriesResponseNode.export(timeSeriesResponseString, 0, \
-                                     namespacedef_='xmlns:ns2="http://www.cuahsi.org/waterML/1.0/"')
+                                     namespacedef_=' '.join(['xmlns:gml="http://www.opengis.net/gml"',
+                                                   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
+                                                   'xmlns:xlink="http://www.w3.org/1999/xlink"',
+                                                   'xmlns:wtr="http://www.cuahsi.org/waterML/"',
+                                                   'xmlns:xsd="http://www.w3.org/2001/XMLSchema"',
+                                                   'xmlns="http://www.cuahsi.org/waterML/1.0/"']))
+            print timeSeriesResponseString.getvalue()
             rsp.set_element_GetValuesResult(timeSeriesResponseString.getvalue())                                      
         #here, how to generate a fault!!!           
+        except Exception, e:
+            import traceback
+            traceback.print_exc(file=sys.stdout) 
+            if isinstance(e,Fault):
+                detail = None
+                if e.detail is not None: 
+                    detail = Detail()
+                    detail.any = e.detail            
+                rsp = FaultType(e.code, e.string, e.actor, detail)
+        return rsp
+    #implementation of GetValuesObj
+    def soap_GetValuesObject(self, ps):
+        """
+        implementation of the "GetValues" operation
+        """
+        try:
+            #this code is just for deploying on apache
+            #httpReq = kw['request']
+            rsp = WaterOneFlow.soap_GetValuesObject(self,ps)
+            request = self.request 
+            #get input variable
+            siteCodeUnicodeStr = request.get_element_location()
+            variableCodeUnicodStr = request.get_element_variable()
+            startDate = request.get_element_startDate()
+            endDate = request.get_element_endDate()
+            #construct/renew the siteInfo_site_dictionary.
+            #currently, renew it every 14 days (subject to change)?
+            if(len(siteInfo_site_dictionary.keys())==1 or 
+                    datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
+                #here has a possible race condition, so a lock is placed
+                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                lock(semaphore, LOCK_EX)
+                treeIter = getIterator(centralRegUrl)
+                #save the srs information in dictionary
+                buildSiteInfo_siteDictionary(treeIter,siteInfo_site_dictionary)
+                siteInfo_site_dictionary["__modTime"]=datetime.now()
+                #close semaphore, release the lock file. (otherwise deadlock will be possible)
+                semaphore.close()
+            #some basic error checking
+            #validity of siteCode:
+            siteCodeArray = map(str,siteCodeUnicodeStr.split(":"))
+            if  len(siteCodeArray) < 2 or\
+                    not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
+                    not siteCodeArray[0].upper() == "TCOON":
+                fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
+                raise fault
+            #check validity of variableCode
+            variableCodeArray = map(str, variableCodeUnicodStr.split(":"))
+            if  len(variableCodeArray) < 2 or\
+                    not variable_Dictionary.has_key(variableCodeArray[1]) or \
+                    not variableCodeArray[0].upper() == "TCOON":
+                fault = Fault(Fault.Client, "Illegal VariableCode", actor="Variable", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
+                raise fault
+            #preprocessing passing-in time
+            if startDate == "":
+                startDate = (datetime.now()-timedelta(years=float(100))).isoformat()
+            if endDate == "":
+                endDate = datetime.now().isoformat()              
+            #time format validation
+            try:
+                time.strptime(startDate,"%Y-%m-%d")
+                time.strptime(endDate,"%Y-%m-%d")
+            except:
+                fault = Fault(Fault.Client, "Illegal start/end Date", actor="startDate/endDate", \
+                                  detail="The format of starDate/endDate string is illegal, please use format 'YYYY-MM-DDTHH:MM:S'(CST timezone) error startDate: %s   erro endDate: %s " %(startDate,endDate))
+                raise fault
+            ##################################################################################################################################################
+            #timeSeries type
+            timeSeriesResponseNode = rsp.new_timeSeriesResponse()
+            #generate return XML info
+            queryInfoNode = timeSeriesResponseNode.new_queryInfo()
+            #here, set creation time in ZULU zone
+            #get the UTC time for now
+            nowTime = datetime.now()+ timedelta(hours=float(6))
+            strNowTime = "".join(["T".join(str(nowTime)[:str(nowTime).index(".")].split()),"Z"])
+            queryInfoNode.set_element_creationTime(strNowTime)
+            queryInfoNode.set_element_queryURL(getTCOONURLqueryString(siteCodeArray[1],variableCodeArray[1],startDate,endDate))
+            #criteria Node
+            criteriaNode = queryInfoNode.new_criteria()
+            criteriaNode.set_element_locationParam(":".join(siteCodeArray))
+            criteriaNode.set_element_variableParam(":".join(variableCodeArray))
+            #time parameter
+            timeParamNode = criteriaNode.new_timeParam()
+            timeParamNode.set_element_beginDateTime(startDate)
+            timeParamNode.set_element_endDateTime(endDate)
+            criteriaNode.set_element_timeParam(timeParamNode)
+            queryInfoNode.set_criteria(criteriaNode)
+            timeSeriesResponseNode.set_element_queryInfo(queryInfoNode)
+            #time series node
+            timeSeriesNode = timeSeriesResponseNode.new_timeSeries()
+            #.......................................................
+            rsp.set_element_timeSeriesResponse(timeSeriesResponseNode)
         except Exception, e:
             import traceback
             traceback.print_exc(file=sys.stdout) 
