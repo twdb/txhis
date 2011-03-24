@@ -121,10 +121,10 @@ def buildSiteInfo_siteDictionary(treeIter,siteInfo_site_dict):
         for xmlNode in siteInfo_site_dict["005"][1]:
             print xmlNode[2].text
             
-# get input parameters for TCOON GetValues information
+# get input parameters for CBI GetValues information
 # Input: siteCode, variableCode, startingDate, endingDate
 # output: an encoded URL string for constructing a GET HTTP request
-def getTCOONParamList(siteCode,variableCode,startDate,endDate):
+def getCBIParamList(siteCode,variableCode,startDate,endDate):
     var_code_maping = {"wtp":"water_temperature",
                          "atp":"air_temperature",
                          "bpr":"air_pressure",
@@ -146,7 +146,7 @@ def getTCOONParamList(siteCode,variableCode,startDate,endDate):
 # get the value response for a certain HTTP request
 # input: an encoded URL string (for GET HTTP request
 # output: a StringIO containing all the data.
-def getTCOONValues(urlendata):
+def getCBIValues(urlendata):
     fullurl = "?".join(["http://lighthouse.tamucc.edu/sos",urlendata])
     req = urllib2.Request(fullurl)
     response = urllib2.urlopen(req)
@@ -189,17 +189,17 @@ def parseSOS(stream):
     saxparser.parse(stream)
     return (ctHandler.recordsCount, ctHandler.valuesString)
 
-# return the URL query string for a TCOON site
+# return the URL query string for a CBI site
 # input: siteCode, variableCode, startingDate, endingDate
 # output: the query URL string
-def getTCOONURLqueryString(siteCode,variableCode,startDate,endDate):
-    query = getTCOONParamList(siteCode,variableCode,startDate,endDate)
+def getCBIURLqueryString(siteCode,variableCode,startDate,endDate):
+    query = getCBIParamList(siteCode,variableCode,startDate,endDate)
     return "?".join(["http://lighthouse.tamucc.edu/cgi-bin/pd.cgi",query])
   
 #self_testing code
 if __name__ == "__main__":
     treeIter = getIterator(centralRegUrl)
     buildSiteInfo_siteDictionary(treeIter,{})
-    query = getTCOONParamList("006","pwl","2004-05-28 00:00:00","2006-06-24 00:00:00")
-    print getTCOONValues(query).getvalue()
+    query = getCBIParamList("006","pwl","2004-05-28 00:00:00","2006-06-24 00:00:00")
+    print getCBIValues(query).getvalue()
 

@@ -1,4 +1,4 @@
-#This file serves as a dictionary for all variables available from TCOON
+#This file serves as a dictionary for all variables available from CBI
 variable_Dictionary ={
         #Air temperature
         'atp': {"variableID" :"1",

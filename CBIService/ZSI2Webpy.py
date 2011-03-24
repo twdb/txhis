@@ -9,9 +9,10 @@ from ZSI.ServiceContainer import ServiceSOAPBinding
 from ZSI.parse import ParsedSoap
 from ZSI.writer import SoapWriter
 
-sys.path.append('..')
+sys.path.append('.')
 
-from TCOONWMLImp import WaterOneFlowServiceImpl,WS_PATH
+print sys.path
+from CBIWMLImp import WaterOneFlowServiceImpl,WS_PATH
 
 #Exception classes, for better understanding of exceptions
 class PostNotSpecified(Exception): pass

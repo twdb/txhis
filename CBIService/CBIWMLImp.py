@@ -1,4 +1,4 @@
-	#!/usr/bin/python
+#!/usr/bin/python
 from WaterOneFlow_services_server import *
 from WaterOneFlow_services_types import *
 from backEndhttpReqConstruct import *
@@ -20,8 +20,8 @@ import cStringIO
 ###########################################################################
 siteInfo_site_dictionary={"__modTime":datetime.now()}
 ###########################################################################
-WSDLAddress = "http://midgewater.twdb.state.tx.us/WMLWS/TCOONWML?wsdl"
-WS_PATH = "TCOONWML"
+WSDLAddress = "http://midgewater.twdb.state.tx.us/WMLWS/CBIWML?wsdl"
+WS_PATH = "CBIWML"
 
 #service implementation
 class WaterOneFlowServiceImpl(WaterOneFlow):
@@ -50,7 +50,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -65,7 +65,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #get the "key" part, ready to match in cached dictionary:
             def getKeyPart(str): 
                 tempstr = str.split(':')
-                if tempstr[0] == 'TCOON':return tempstr[1]
+                if tempstr[0] == 'CBI':return tempstr[1]
             #use map, get siteCode part of every string, saving a loop    
             strSiteCodeList = map(getKeyPart,strSiteCodeList)
             #Eliminate the "None" element
@@ -116,7 +116,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -133,7 +133,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #get the "key" part, ready to match in cached dictionary:
             def getKeyPart(str): 
                 tempstr = str.split(':')
-                if tempstr[0] == 'TCOON':return tempstr[1]
+                if tempstr[0] == 'CBI':return tempstr[1]
             #use map, get siteCode part of every string, saving a loop    
             strSiteCodeList = map(getKeyPart,strSiteCodeList)
             #Eliminate the "None" element
@@ -187,7 +187,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -200,7 +200,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #print len(siteInfo_site_dictionary["001"][1])
             if  len(siteCodeArray) < 2 or\
                     not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
-                    not siteCodeArray[0].upper() == "TCOON":
+                    not siteCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
                 raise fault
             else:
@@ -216,7 +216,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                 siteNode.set_siteInfo(siteInfoNode)                
                 #seriesCatalog node
                 seriesCatalogNode = seriesCatalogType()
-                seriesCatalogNode.set_menuGroupName("TCOON Observation Data")
+                seriesCatalogNode.set_menuGroupName("CBI Observation Data")
                 seriesCatalogNode.set_serviceWsdl(WSDLAddress)
                 #here, to be completed
                 seriresList = []
@@ -262,7 +262,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -275,7 +275,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #print len(siteInfo_site_dictionary["001"][1])
             if  len(siteCodeArray) < 2 or\
                     not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
-                    not siteCodeArray[0].upper() == "TCOON":
+                    not siteCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
                 raise fault
             else:
@@ -293,7 +293,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                     raise fault
             #seriesCatalog node
             seriesCatalogNode = siteList[0].new_seriesCatalog()
-            seriesCatalogNode._attrs = dict(menuGroupName="TCOON Observation Data", serviceWsdl = WSDLAddress) 
+            seriesCatalogNode._attrs = dict(menuGroupName="CBI Observation Data", serviceWsdl = WSDLAddress) 
             #here, to be completed
             seriresList = []
             for xmlNode in siteInfo_site_dictionary[siteCodeArray[1]][1]:
@@ -331,7 +331,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                 for key in variable_Dictionary.keys():
                     #notice here the protocol of function generateVariableTypeNodeString
                     variableList.append(generateVariableTypeNodeString(key,variable_Dictionary[key]))
-            elif not variableCodeArray[0].upper()=="TCOON"  or not variable_Dictionary.has_key(variableCodeArray[1]) \
+            elif not variableCodeArray[0].upper()=="CBI"  or not variable_Dictionary.has_key(variableCodeArray[1]) \
                     or len(variableCodeArray) != 2:
                 fault = Fault(Fault.Client, "Illegal variableCode", actor="variableCode", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
                 raise fault
@@ -381,7 +381,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
                 for key in variable_Dictionary.keys():
                     variableNode = variablesNode.new_variable()
                     variableList.append(generateVariableTypeNode(variableNode,key,variable_Dictionary[key]))
-            elif not variableCodeArray[0].upper()=="TCOON"  or not variable_Dictionary.has_key(variableCodeArray[1]) \
+            elif not variableCodeArray[0].upper()=="CBI"  or not variable_Dictionary.has_key(variableCodeArray[1]) \
                     or len(variableCodeArray) != 2:
                 fault = Fault(Fault.Client, "Illegal variableCode", actor="variableCode", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
                 raise fault
@@ -421,7 +421,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -434,14 +434,14 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             siteCodeArray = map(str,siteCodeUnicodeStr.split(":"))
             if  len(siteCodeArray) < 2 or\
                     not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
-                    not siteCodeArray[0].upper() == "TCOON":
+                    not siteCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
                 raise fault
             #check validity of variableCode
             variableCodeArray = map(str, variableCodeUnicodStr.split(":"))
             if  len(variableCodeArray) < 2 or\
                     not variable_Dictionary.has_key(variableCodeArray[1]) or \
-                    not variableCodeArray[0].upper() == "TCOON":
+                    not variableCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal VariableCode", actor="Variable", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
                 raise fault
             #preprocessing passing-in time
@@ -467,7 +467,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             nowTime = datetime.now()+ timedelta(hours=float(6))
             strNowTime = "".join(["T".join(str(nowTime)[:str(nowTime).index(".")].split()),"Z"])
             queryInfoNode.set_creationTime(strNowTime)
-            queryInfoNode.set_queryURL(getTCOONURLqueryString(siteCodeArray[1],variableCodeArray[1],startDate,endDate))
+            queryInfoNode.set_queryURL(getCBIURLqueryString(siteCodeArray[1],variableCodeArray[1],startDate,endDate))
             #criteria Node
             criteriaNode = criteria()
             criteriaNode.set_locationParam(":".join(siteCodeArray))
@@ -488,7 +488,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             xmlNode = siteInfo_site_dictionary[siteCodeArray[1]][1][0]
             #set site code
             siteCodeNode = siteCode()
-            siteCodeNode.set_network("TCOON")
+            siteCodeNode.set_network("CBI")
             siteCodeNode.set_siteID(xmlNode[4].text.split(":")[0])
             siteCodeNode.setValueOf_(xmlNode[4].text.split(":")[0])
             sourceInfoNode.set_siteCode([siteCodeNode])
@@ -509,7 +509,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             #set node here         
             sourceInfoNode.set_geoLocation(geoLocationNode)
             sourceInfoNode.set_verticalDatum(xmlNode[7].text)
-            #countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
+            #countyNote = NoteType(title='County',valueOf_=':'.join(["CBI","Coastal Water Data"]))
             stateNote = NoteType(title='State',valueOf_='Texas')
             commentNote = NoteType(title='Comment',valueOf_=xmlNode[15].text)
             sourceInfoNode.set_note([stateNote,commentNote])
@@ -571,7 +571,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             if(len(siteInfo_site_dictionary.keys())==1 or 
                     datetime.now() >= siteInfo_site_dictionary["__modTime"] + timedelta(days=14)):
                 #here has a possible race condition, so a lock is placed
-                semaphore = open('/home/txhis/TCOONService/semaphore/semaphore.file', "w")
+                semaphore = open('/home/txhis/CBIService/semaphore/semaphore.file', "w")
                 lock(semaphore, LOCK_EX)
                 treeIter = getIterator(centralRegUrl)
                 #save the srs information in dictionary
@@ -584,14 +584,14 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             siteCodeArray = map(str,siteCodeUnicodeStr.split(":"))
             if  len(siteCodeArray) < 2 or\
                     not siteInfo_site_dictionary.has_key(siteCodeArray[1]) or \
-                    not siteCodeArray[0].upper() == "TCOON":
+                    not siteCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal SiteCode", actor="SiteCode", detail="site code \"%s\" is illegal/not found" % ":".join(siteCodeArray))
                 raise fault
             #check validity of variableCode
             variableCodeArray = map(str, variableCodeUnicodStr.split(":"))
             if  len(variableCodeArray) < 2 or\
                     not variable_Dictionary.has_key(variableCodeArray[1]) or \
-                    not variableCodeArray[0].upper() == "TCOON":
+                    not variableCodeArray[0].upper() == "CBI":
                 fault = Fault(Fault.Client, "Illegal VariableCode", actor="Variable", detail="variable code \"%s\" is illegal/not found" % ":".join(variableCodeArray))
                 raise fault
             #preprocessing passing-in time
@@ -617,7 +617,7 @@ class WaterOneFlowServiceImpl(WaterOneFlow):
             nowTime = datetime.now()+ timedelta(hours=float(6))
             strNowTime = "".join(["T".join(str(nowTime)[:str(nowTime).index(".")].split()),"Z"])
             queryInfoNode.set_element_creationTime(strNowTime)
-            queryInfoNode.set_element_queryURL(getTCOONURLqueryString(siteCodeArray[1],variableCodeArray[1],startDate,endDate))
+            queryInfoNode.set_element_queryURL(getCBIURLqueryString(siteCodeArray[1],variableCodeArray[1],startDate,endDate))
             #criteria Node
             criteriaNode = queryInfoNode.new_criteria()
             criteriaNode.set_element_locationParam(":".join(siteCodeArray))

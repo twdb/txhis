@@ -1,12 +1,12 @@
 from cuashi import *
 from variable_info import *
-from backEndhttpReqConstruct import getTCOONValues,getTCOONParamList,parseSOS
+from backEndhttpReqConstruct import getCBIValues,getCBIParamList,parseSOS
 
 #generate queryInfo node:this piece of crap add criteria inside of an 
 #                        queryInfo node
 def genQueryInfo(parent_Node,whichpara,value):
     """
-    Generate a QueryInfo XML node, under TCOON webservice context
+    Generate a QueryInfo XML node, under CBI webservice context
     input:  parentNode, parametername to set, value to set
     output: None (because parentNone has been in-place set)
     """
@@ -34,7 +34,7 @@ def genSite_forGetSite(parent_Node,xmlNode,key,name,srsInfo,siteList):
     newSiteInfoNode.set_element_siteName(name)
     #here, wait for Daharas
     newSiteCodeNode = newSiteInfoNode.new_siteCode(key)
-    newSiteCodeNode._attrs=dict([('network',"TCOON"),('siteID',key)])
+    newSiteCodeNode._attrs=dict([('network',"CBI"),('siteID',key)])
     #here, WSDL definition is problematic
     newSiteInfoNode.set_element_siteCode([newSiteCodeNode])
     geoLocationOuterNode=newSiteInfoNode.new_geoLocation()
@@ -47,7 +47,7 @@ def genSite_forGetSite(parent_Node,xmlNode,key,name,srsInfo,siteList):
     newSiteInfoNode.set_element_geoLocation(geoLocationOuterNode)
     newSiteInfoNode.set_element_verticalDatum(xmlNode[7].text)
     #countyNote = newSiteInfoNode.new_note(':'.join([xmlNode[9].text,"Coastal Water Data"]))
-    countyNote = newSiteInfoNode.new_note(':'.join(["TCOON","Coastal Water Data"]))
+    countyNote = newSiteInfoNode.new_note(':'.join(["CBI","Coastal Water Data"]))
     countyNote._attrs = dict(title='County')
     stateNote = newSiteInfoNode.new_note("Texas")
     stateNote._attrs = dict(title='State')
@@ -79,7 +79,7 @@ def generateSiteInfo_string(xmlNode,srsInfo):
     SiteInfoNode.set_siteName(xmlNode[4].text.split(":")[1])
     #set site code
     siteCodeNode = siteCode()
-    siteCodeNode.set_network("TCOON")
+    siteCodeNode.set_network("CBI")
     siteCodeNode.set_siteID(xmlNode[4].text.split(":")[0])
     SiteInfoNode.set_siteCode([siteCodeNode])
     #timezone info set
@@ -99,7 +99,7 @@ def generateSiteInfo_string(xmlNode,srsInfo):
     #set node here         
     SiteInfoNode.set_geoLocation(geoLocationNode)
     SiteInfoNode.set_verticalDatum(xmlNode[7].text)
-    countyNote = NoteType(title='County',valueOf_=':'.join(["TCOON","Coastal Water Data"]))
+    countyNote = NoteType(title='County',valueOf_=':'.join(["CBI","Coastal Water Data"]))
     stateNote = NoteType(title='State',valueOf_='Texas')
     commentNote = NoteType(title='Comment',valueOf_=xmlNode[15].text)
     SiteInfoNode.set_note([countyNote,stateNote,commentNote])
@@ -115,7 +115,7 @@ def generateSeriesNode(xmlNode):
     #get property of this variable
     variableCodeInfoSet = variable_Dictionary[name_to_code_mappingDictionary[xmlNode[2].text]]
     variableCodeNode.set_variableID(int(variableCodeInfoSet["variableID"]))
-    variableCodeNode.set_vocabulary("TCOON")
+    variableCodeNode.set_vocabulary("CBI")
     variableCodeNode.setValueOf_(variableCodeInfoSet['variableCode'])
     variableNode.set_variableCode([variableCodeNode])
     #set variable name
@@ -138,7 +138,7 @@ def generateSeriesNode(xmlNode):
     variableNode.set_units(unitNode)
     #set nodata value
     variableNode.set_NoDataValue("-9999")
-    #time support. In TCOON's case, it's not regular
+    #time support. In CBI's case, it's not regular
     timeSupportNode = timeSupport(isRegular=False)
     variableNode.set_timeSupport(timeSupportNode)
     #series Node
@@ -170,7 +170,7 @@ def generateSeriesNode(xmlNode):
     seriesNode.set_Method(MethodNode)
     #Source element
     sourceNode = SourceType()
-    sourceNode.set_Organization("TCOON")
+    sourceNode.set_Organization("CBI")
     sourceNode.set_SourceDescription('Texas Coastal Ocean Observation Network')
     seriesNode.set_Source(sourceNode)
     #Quality Control ID
@@ -186,7 +186,7 @@ def generateVariableTypeNodeString(key,variableKeyedValue):
     varCodeNode = variableCode()
     varCodeNode.set_default(True)
     varCodeNode.set_variableID(int(variableKeyedValue['variableID']))
-    varCodeNode.set_vocabulary("TCOON")
+    varCodeNode.set_vocabulary("CBI")
     varCodeNode.setValueOf_(variableKeyedValue['variableCode'])
     variableNode.set_variableCode([varCodeNode])
     #set variable name
@@ -209,7 +209,7 @@ def generateVariableTypeNodeString(key,variableKeyedValue):
     variableNode.set_units(unitNode)
     #set nodata value
     variableNode.set_NoDataValue("-9999")
-    #time support. In TCOON's case, it's not regular
+    #time support. In CBI's case, it's not regular
     timeSupportNode = timeSupport(isRegular=False)
     variableNode.set_timeSupport(timeSupportNode)
     return variableNode
@@ -218,7 +218,7 @@ def generateVariableTypeNodeString(key,variableKeyedValue):
 def generateVariableTypeNode(emptyNode,key,variableKeyedValue):
     #variable code element
     variableCodeNode = emptyNode.new_variableCode(variableKeyedValue['variableCode'])
-    variableCodeNode._attrs = dict([('vocabulary',"TCOON"),('default','true'),('variableID',variableKeyedValue['variableID'])])
+    variableCodeNode._attrs = dict([('vocabulary',"CBI"),('default','true'),('variableID',variableKeyedValue['variableID'])])
     emptyNode.set_element_variableCode([variableCodeNode])
     #variable name element
     emptyNode.set_element_variableName(variableKeyedValue["variableName"])
@@ -250,8 +250,8 @@ def generateSeriesValueList(siteCode,variableCode,startDate,endDate):
     valuesNode = TsValuesSingleVariableType()
     valuesNode.set_unitsAbbreviation(variable_Dictionary[variableCode]['units']['abbr'])
     valuesNode.set_unitsCode(variable_Dictionary[variableCode]['units']['unitsCode'])
-    qurey = getTCOONParamList(siteCode,variableCode,startDate,endDate)
-    outPutStringIO = getTCOONValues(qurey)
+    qurey = getCBIParamList(siteCode,variableCode,startDate,endDate)
+    outPutStringIO = getCBIValues(qurey)
     valueSingleNodeList = []
     parseResult = parseSOS(outPutStringIO)
     for row in parseResult[1].split():
