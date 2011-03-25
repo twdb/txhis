@@ -6,8 +6,8 @@ Database model for TXHIS backend database
 @author: CTtan
 '''
 from sqlalchemy import Column, ForeignKey, UniqueConstraint
-from sqlalchemy import Sequence, Integer, Enum, String, Text, Boolean, \
-     DateTime, Float
+from sqlalchemy import (Sequence, Integer, Enum, String, Text, Boolean,
+                        DateTime, Float)
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.interfaces import PropComparator
 from sqlalchemy.ext.declarative import declarative_base
@@ -67,6 +67,7 @@ class Sources(Base):
     __tablename__ = "Sources"
     __table_args__ = (
         UniqueConstraint('SourceID', 'NetworkName', 'WSDLLink', name='uix_2'),
+        {},
         )
 
     SourceID = Column(Integer, Sequence('source_seq_id', optional=True),
@@ -107,6 +108,7 @@ class VariableMapping(Base):
     __table_args__ = (
         UniqueConstraint('source_id', 'RemoteVariableCode', 'RemoteUnitsID',
                          name='uix_1'),
+        {},
         )
 
     MappingID = Column(Integer, Sequence('VarMapping_seq_id', optional=True),
@@ -168,7 +170,8 @@ class UnitConversionFormula(Base):
     __table_args__ = (
         UniqueConstraint("SourceUnitsID", "DestinationUnitsID",
                          name="MappingPair"),
-    )
+        {},
+        )
 
     FormulaID = Column(Integer, Sequence('Formula_seq_id', optional=True),
                        primary_key=True)
