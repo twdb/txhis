@@ -37,7 +37,7 @@ class yearString(str):
     def __cmp__(self,other):
         LString,RString = self.stringIns,other.stringIns
         return int(LString) == int(RString)
-    
+
 
 class basinIDString(str):
     def __init__(self,stringIns):
@@ -82,13 +82,13 @@ class selectTCEQExtractor(HTMLParser): # derive new HTML parser
                     self.insideBasinIdSelect = True
                 if value == "year":
                     self.insideYearSelect = True
-            #elif attr[0] == ""    
-    def end_select(self):        
-        "Record the end of a hyperlink."        
+            #elif attr[0] == ""
+    def end_select(self):
+        "Record the end of a hyperlink."
         if self.insideBasinIdSelect:
             self.insideBasinIdSelect = False
         if self.insideYearSelect:
-            self.insideYearSelect = False   
+            self.insideYearSelect = False
     def start_option(self,attrs):
         if self.insideBasinIdSelect:
             if len(attrs) > 0 :
@@ -99,25 +99,26 @@ class selectTCEQExtractor(HTMLParser): # derive new HTML parser
             if len(attrs) > 0 :
                 for name,value in attrs :
                     if name == "value":
-                        self.selectYears.append(value)           
+                        self.selectYears.append(value)
     def get_selectBasins(self) :     # return the list of basinID
-        return self.selectBasins 
+        return self.selectBasins
     def get_selectYears(self) :     # return the list of years
         return self.selectYears
 
 
 config = ["testAdaptor_config\TCEQ_config\logParam.xml","..\\testAdaptor_config\TCEQ_config\srcParam.xml", \
-          "..\\testAdaptor_config\TCEQ_config\pipeParam.xml","..\\testAdaptor_config\TCEQ_config\sinkParam.xml"]            
+          "..\\testAdaptor_config\TCEQ_config\pipeParam.xml","..\\testAdaptor_config\TCEQ_config\sinkParam.xml"]
+
 
 class adaptor(object):
+
     # here,default TCEQ does not have a pipe
-    def __init__(self, adtName,
-                       srcConfName,pipeConfName,sinkConfName,
-                       logConfName = config[0],firstTimeRun = True):
+    def __init__(self, adtName, srcConfName, pipeConfName, sinkConfName,
+                 logConfName=config[0], firstTimeRun=True):
         self.adtName = adtName
         self.firstTimeRun = firstTimeRun
         #assert not logConfName
-        #get log config parameter dictionary         
+        #get log config parameter dictionary
         self.logList = []
         #initialize log(s) according to parameters.
         log_args = get_conf_attr(logConfName)
@@ -128,7 +129,7 @@ class adaptor(object):
         self.interval = self.adaptorSource.interval
         #no pipe object for TCEQ
         #sink obj
-        self.adaptorSink = SQLSink_forTCEQ.sink(get_conf_attr(sinkConfName,'sink'),self.logList)      
+        self.adaptorSink = SQLSink_forTCEQ.sink(get_conf_attr(sinkConfName,'sink'),self.logList)
     #adaptor run
     def adpator_run(self):
         #new logic goes in here
@@ -137,7 +138,7 @@ class adaptor(object):
         response = urllib2.urlopen(req)
         format = NullFormatter()           # create default formatter
         htmlparser = selectTCEQExtractor(format)        # create new parser object
-        
+
         htmlparser.feed(response.read())      # parse the file saving the info about links
         htmlparser.close()
         basinIDsList = htmlparser.get_selectBasins()   # get the hyperlinks list
@@ -170,8 +171,8 @@ class adaptor(object):
                 self.adaptorSink.updateDB(methodLookUpfile="additionalInfo/varMethod.vmdb")
 
 
-        
-        
+
+
 
 
 if __name__ == "__main__":

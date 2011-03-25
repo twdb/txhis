@@ -28,8 +28,8 @@ class Operation(threading._Timer):
             else:
                 return
             self.finished.set()
-    
-    
+
+
 #build a complete adapter (including source,pipe(s) and sink (s))
 #note: an adapter can have multiple log(s), pipe(s) and sink(s)
 config = ["testAdaptor_config\logParam.xml","testAdaptor_config\srcParam.xml", \
@@ -42,7 +42,7 @@ class Singleton(object):
         ob = super(Singleton,cls).__new__(cls,*args,**kw)
         ob.__dict__ = cls._state
         return ob
-    
+
 
 class adaptor_pool(Singleton):
     existingAdaptor = ["TPWD","TCEQ"]

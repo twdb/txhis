@@ -12,39 +12,42 @@
 #=========================================================================
 
 
-import string, traceback, sys
+import string
+import traceback
+import sys
+
 import utility_EAI.twdbEaiLog as reticLog
 from sqlalchemy import create_engine
 
 class dbFactory:
-    
+
     def __init__ (self, args, logger):
         self.session = None
         #use sqlalchemy, so no cusor needed
         #self.cursors = {}
         self.logList = logger
         self.connect(args)
-        
-        
+
+
     def connect (self, args):
         'Establish a connection with the database'
         try:
-            reticLog.logInfo(self.logList, "Intitializing Database Connection : " + args['dsn'])            
+            reticLog.logInfo(self.logList, "Intitializing Database Connection : " + args['dsn'])
             #construct connection string according to parameters
             engineStr = string.join([args['dbType'],
                                      ''.join(['//', args['user']],),
                                      ''.join([args['password'],"@",args['dsn']]) ],
                                      ':')
             #print engineStr
-            dbDriverMod = args['driverName']
-            self.engine = create_engine(engineStr,module_name = dbDriverMod)
+            dbDriverMod = __import__(args['driverName'])
+            self.engine = create_engine(engineStr, module=dbDriverMod)
             reticLog.logInfo(self.logList, "DataBase Connection established")
         except:
             errorMessage = traceback.format_exception_only(sys.exc_info()[0],sys.exc_info()[1])[0]
-            reticLog.logError(self.logList, "Database error : " + errorMessage ); raise "Database Error";                        
-        
-            
-    
+            reticLog.logError(self.logList, "Database error : " + errorMessage ); raise "Database Error";
+
+
+
 
 
 if __name__ == '__main__':
@@ -71,6 +74,6 @@ if __name__ == '__main__':
     dbArg['password']='12345678a'
     dbArg['dsn']='10.10.13.77:3108/OD_TPWD'
     dbArg['driverName']='pyodbc'
-    #self test   
+    #self test
     dbInstance = dbFactory(dbArg,logList)
     dbInstance.connect(dbArg)

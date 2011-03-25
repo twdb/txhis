@@ -1,41 +1,45 @@
 from sqlalchemy import orm, schema, types, create_engine
 import datetime
+import pyodbc
 
 metadata = schema.MetaData()
 
 major_area_str = 'ma'
 minor_bay_str = 'mb'
-station_str    = 'st'
+station_str = 'st'
 
 VariableIDMap = {
-                    'start_temperature_num':1,
-                    'start_salinity_num':2,
-                    'start_turbidity_num':3,
-                    'start_dissolved_oxygen_num':4,
-                    'start_barometric_pressure_num':5,
-                }
+    'start_temperature_num': 1,
+    'start_salinity_num': 2,
+    'start_turbidity_num': 3,
+    'start_dissolved_oxygen_num': 4,
+    'start_barometric_pressure_num': 5,
+    }
+
 
 #DataValues class  --> object
 class DataValues(object):
     pass
 
+
 #Sites class --
 class Sites(object):
     pass
 
-engine = create_engine('mssql://testaaa:12345678a@localhost:3108/OD_TPWD',module_name='pyodbc')
+engine = create_engine('mssql://testaaa:12345678a@localhost:3108/OD_TPWD',
+                       module=pyodbc)
 metadata.bind = engine
 #here, orm magic happens
 #datavalues table
-DataValues_table = schema.Table('DataValues',metadata,  \
-                                autoload=True,autoload_with=engine)
-orm.mapper(DataValues,DataValues_table)
+DataValues_table = schema.Table('DataValues', metadata,
+                                autoload=True, autoload_with=engine)
+orm.mapper(DataValues, DataValues_table)
 #offsets table
-Sites_table = schema.Table('Sites',metadata,
+Sites_table = schema.Table('Sites', metadata,
 #                           schema.Column('SiteID', types.Integer, \
 #                                        schema.Sequence('Sites_seq_id',start=0),
 #                                primary_key=True),useexisting=False,
-                                autoload=True,autoload_with=engine)
+                                autoload=True, autoload_with=engine)
 orm.mapper(Sites,Sites_table)
 
 def tpwdProcessInfo(record):
