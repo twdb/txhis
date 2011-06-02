@@ -25,10 +25,13 @@ for filetype in filetypes.findChildren():
             sg = segment.attrs[0][-1]
             file_name = ''.join((sg,'_',yr,'_',ft,'.psv')).replace('/','')
             print 'processing : ', file_name
-            if not os.path.exists(file_name):
+            if not os.path.exists(os.path.join(output_dir, file_name)):
                 query_url = 'http://www.tceq.state.tx.us/cgi-bin/compliance/monops/crp/sampquery.pl?filetype=%s&year=%s&basinid=%s'%(ft,yr,sg)
-                response = urllib2.urlopen(query_url)
-                open(os.path.join(output_dir, file_name),'w').write(response.read())
-                print '... saved'
+                try:
+                    response = urllib2.urlopen(query_url)
+                    open(os.path.join(output_dir, file_name),'w').write(response.read())
+                    print '... saved'
+                except:
+                    print '... failed'
             else:
                 print '... file exists'
