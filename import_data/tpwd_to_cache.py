@@ -225,8 +225,6 @@ def commit_data_for_site(site_name):
         cache.db_session.commit()
 
 
-
-
 def site_code_hash(major_area_code, minor_bay_code, station_code,
                    latitude, longitude):
     """return hashed site code, this should provide a unique site code
@@ -235,7 +233,6 @@ def site_code_hash(major_area_code, minor_bay_code, station_code,
     return '_'.join([major_area_code, minor_bay_code, station_code,
                      latitude.split('.')[-1][-4:],
                      longitude.split('.')[-1][:-4]])
-
 
 
 def export_to_cache():
