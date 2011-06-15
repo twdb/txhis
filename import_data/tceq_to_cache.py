@@ -30,7 +30,7 @@ ECHO_SQLALCHEMY = False
 
 CACHE_DATABASE_FILE = "tceq_pyhis_cache.db"
 CACHE_DATABASE_URI = 'sqlite:///' + CACHE_DATABASE_FILE
-TCEQ_SOURCE = 'TCEQFiles'
+TCEQ_SOURCE = 'http://his.crwr.utexas.edu/TRACS/cuahsi_1_0.asmx?WSDL'
 TCEQ_NETWORK = 'TCEQWaterQuality'
 TCEQ_VOCABULARY = 'TCEQWaterQuality'
 
@@ -479,7 +479,7 @@ def convert_to_pyhis():
     for tceq_parameter_code in WDFT_PARAMETERS:
 
         cache.init_cache(CACHE_DATABASE_FILE, ECHO_SQLALCHEMY)
-        file_source = cache.CacheSource(url='file:///' + TCEQ_SOURCE)
+        file_source = cache.CacheSource(url=TCEQ_SOURCE)
         parameter = tceq_session.query(Parameter).filter_by(
             parameter_code=tceq_parameter_code).one()
         results_query = parameter.results.filter_by(gtlt='')
