@@ -1,7 +1,8 @@
 #!/bin/sh
 
-python ./tpwd_to_cache.py
-python ./gems_export.py
+#python ./tpwd_to_cache.py
+#python ./tceq_to_cache.py
+#python ./cache_to_gems.py
 
 sqlite3 ./gems_database.db <<!
 .headers on
