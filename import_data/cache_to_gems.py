@@ -1,6 +1,8 @@
 """
 export pyhis cache database to the gems database
 """
+import os
+
 from sqlalchemy import create_engine, func, Table
 from sqlalchemy.schema import UniqueConstraint, ForeignKey
 from sqlalchemy import (Column, Boolean, Integer, Index, Text, String, Float,
@@ -14,23 +16,44 @@ from sqlite3 import dbapi2 as sqlite
 
 from pyhis import cache
 
+CACHE_DIR = "cache_files/"
 CACHE_DATABASE_FILES = [
     "tpwd_pyhis_cache.db",
     "tceq_pyhis_cache.db",
     "twdb_pyhis_cache.db",
     ]
 
-GEMS_DATABASE_FILE = "gems_database.db"
+GEMS_DATABASE_DIR = "gems_database/"
+GEMS_DATABASE_FILE = os.path.join(GEMS_DATABASE_DIR, "gems_database.db")
 GEMS_DATABASE_URI = 'sqlite:///' + GEMS_DATABASE_FILE
 ECHO_SQLALCHEMY = False
 
 gems_engine = create_engine(GEMS_DATABASE_URI, convert_unicode=True,
                             module=sqlite, echo=ECHO_SQLALCHEMY)
 GemsSession = sessionmaker(autocommit=False, autoflush=False,
-                            bind=gems_engine)
+                           bind=gems_engine)
 gems_session = GemsSession()
 
 Base = declarative_base(bind=gems_engine)
+
+
+# this units dict is handled a little differently than those in the
+# *_to_cache.py scripts. Basically, this dict saves us a sql query for
+# variable.units per each value.
+UNITS_DICT = {
+    # 'variable_code': ('unit_code', 'unit_name', 'conversion_func')
+    'air_pressure': ('inches hg', 'inches of mercury'),
+    'air_temperature': ('degC', 'degrees celsius'),
+    'gage_height': ('gage height', 'international feet'),
+    'salinity': ('ppt', 'parts per thousand'),
+    'turbidity': ('ntu', 'nephelometric turbidity units'),
+    'water_dissolved_oxygen_concentration': (
+        'mg/l', 'milligrams per liter'),
+    'water_dissolved_oxygen_percent_saturation': ('percent', 'percent'),
+    'water_ph': ('dimensionless', 'dimensionless'),
+    'water_specific_conductance': ('uS/cm', 'microsiemens'),
+    'water_temperature': ('degC', 'degrees celsius'),
+    }
 
 
 class GEMSSite(Base):
@@ -112,8 +135,10 @@ init()
 
 
 def export_cache():
+    global_site_index = 1
     for database_file in CACHE_DATABASE_FILES:
-        cache.init_cache(database_file, ECHO_SQLALCHEMY)
+        cache.init_cache(os.path.join(CACHE_DIR, database_file),
+                         ECHO_SQLALCHEMY)
         # create an index on timeseries values if it doesn't exist
         try:
             i = Index('ix_value_timeseries_id',
@@ -123,23 +148,23 @@ def export_cache():
             pass
         sources = cache.db_session.query(cache.DBSource).all()
         for source in sources:
-            export_source(source)
+            global_site_index = export_source(source, global_site_index)
 
 
-def export_source(source):
+def export_source(source, global_site_index):
     sites_query = cache.db_session.query(cache.DBSite)
     site_count = sites_query.count()
-    site_index = 0
+    source_site_index = 1
     for site in page_query(sites_query):
-        site_index += 1
-        print("processing site %s of %s" % (site_index, site_count))
+        if source_site_index == 1 or source_site_index % 1000 == 0:
+            print("processing site %s of %s" % (source_site_index, site_count))
         try:
             gems_site = gems_session.query(GEMSSite).filter_by(
                 ODM_Site_Code=site.code,
                 ODM_Network=site.network).one()
         except NoResultFound:
             gems_site = GEMSSite(
-                ODM_SQL_SiteID=site_index,
+                ODM_SQL_SiteID=global_site_index,
                 ODM_Network=site.network,
                 ODM_URL=source.url,
                 ODM_Site_Code=site.code,
@@ -153,7 +178,10 @@ def export_source(source):
             gems_session.add(gems_site)
         for timeseries in site.timeseries_list.all():
             export_timeseries(timeseries, gems_site)
+        global_site_index += 1
+        source_site_index += 1
     gems_session.commit()
+    return global_site_index
 
 
 def export_timeseries(timeseries, gems_site):
@@ -161,20 +189,12 @@ def export_timeseries(timeseries, gems_site):
         if len(gems_session.new) > 1500:
             gems_session.commit()
 
-        # try:
-        #     units = timeseries.variable.units.one()
-        #     units_code = units.code
-        #     units_name = units.name
-        # except NoResultFound:
-        #     units_code = None
-        #     units_name = None
-
-        units_code = None
-        units_name = None
+        variable_code = timeseries.variable.code
+        units_code, units_name = UNITS_DICT[variable_code]
 
         data = GEMSData(
             ODM_SQL_SiteID=gems_site.ODM_SQL_SiteID,
-            ODM_TWDB_Param=timeseries.variable.code,
+            ODM_TWDB_Param=variable_code,
             ODM_TWDB_Param_Name=timeseries.variable.name,
             ODM_TWDB_Param_Desc=None,
             ODM_Param_Date=value.timestamp,

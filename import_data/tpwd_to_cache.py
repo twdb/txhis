@@ -5,24 +5,26 @@ import csv
 from datetime import datetime
 import gc
 import glob
+import os
 
 import sqlalchemy as sa
 from pyhis import cache
 
-CACHE_DATABASE_FILE = "pyhis_tpwd_cache.db"
+CACHE_DIR = "cache_files/"
+CACHE_DATABASE_FILE = os.path.join(CACHE_DIR, "tpwd_pyhis_cache.db")
 CACHE_DATABASE_URI = 'sqlite:///' + CACHE_DATABASE_FILE
 
 TPWD_DATA_DIR = '/home/wilsaj/data/tpwd/'
 
-ECHO_SQLALCHEMY = True
+ECHO_SQLALCHEMY = False
 
-TPWD_SOURCE = 'TPWDFiles'
+TPWD_SOURCE = 'http://his.crwr.utexas.edu/tpwd/cuahsi_1_0.asmx?WSDL'
 TPWD_NETWORK = 'TPWDCoastalFisheries'
 TPWD_VOCABULARY = 'TPWDCoastalFisheries'
 
 
-site_list = ['aransas',
-             'corpus_christi',
+SITE_LIST = ['aransas',
+             'corpuschristi',
              'eastmatagorda',
              'galveston',
              'gulf',
@@ -32,76 +34,130 @@ site_list = ['aransas',
              'sanantonio',
              'upperlagunamadre']
 
+WDFT_PARAMETERS = {
+    'barometric_pressure': ('air_pressure', 'inches hg'),
+    'temperature': ('water_temperature', 'degC'),
+    'dissolved_oxygen': ('water_dissolved_oxygen_concentration', 'ppm'),
+    'salinity': ('salinity', 'ppt'),
+    'turbidity': ('turbidity', 'ntu')
+    }
 
-def tpwd_cache_variable(variable_code):
-    return cache.CacheVariable(
-        vocabulary=TPWD_VOCABULARY,
-        code=variable_code,
-        name=variable_code)
+UNITS_DICT = {
+    # 'key': ('parameter name', standard_units, function_that_converts_to_standard_units)
+    'degC': ('degrees celsius', 'degC', None),
+    'inches hg': ('inches of mercury', 'inches hg', None),
+    'mgl': ('milligrams per liter', 'mgl', None),
+    'ntu': ('nephelometric turbidity units', 'ntu', None),
+    'ppt': ('parts per thousand', 'ppt', None),
+    'ppm': ('parts per million', 'ppt', lambda x: x / 1000.0),
+    }
+
+PARAMETERS_DICT = {
+    # 'parameter_code': 'parameter_name
+    'air_pressure': 'Air Pressure',
+    'salinity': 'Salinity',
+    'water_dissolved_oxygen_concentration': 'Dissolved Oxygen Concentration',
+    'water_temperature': 'Water Temperature',
+    'turbidity': 'Turbidity',
+}
 
 
 def commit_data_for_site(site_name):
-    """commit data values to the database"""
-    file_source = cache.CacheSource(url='file:///' + TPWD_SOURCE)
-    csv_files = glob.glob('/'.join([TPWD_DATA_DIR, '/request_*/%s*' % site_name]))
-    variable_codes = (
+    """commits data values to the database"""
+    csv_files = glob.glob('/'.join(
+        [TPWD_DATA_DIR, '/request_*/%s*' % site_name]))
+
+    for i, csv_file in enumerate(csv_files):
+        print "processing file: %s" % csv_file
+
+        total_lines = 0
+        with open(csv_file, 'rb') as f:
+            for i, l in enumerate(f):
+                pass
+            total_lines = i + 1
+
+        line_count = 0
+        with open(csv_file, 'rb') as f:
+            reader = csv.DictReader(f)
+
+            for row in reader:
+                if len(cache.db_session.new) > 5000:
+                    cache.db_session.commit()
+
+                cache_row(row, csv_file)
+        cache.db_session.commit()
+
+
+def cache_row(row, csv_file_path):
+    """commit a single row of data to the database"""
+    file_source = cache.CacheSource(url=TPWD_SOURCE)
+    tpwd_parameter_codes = (
         'barometric_pressure',
         'temperature',
         'dissolved_oxygen',
         'salinity',
         'turbidity')
 
-    variables = dict([code, tpwd_cache_variable(code)]
-                     for code in variable_codes)
+    site_code = site_code_hash(
+        row['major_area_code'],
+        row['minor_bay_code'],
+        row['station_code'],
+        row['start_latitude_num'],
+        row['start_longitude_num'])
 
-    for i, csv_file in enumerate(csv_files):
-        with open(csv_file, 'rb') as f:
-            reader = csv.DictReader(f)
+    site = cache.CacheSite(
+        network=TPWD_NETWORK,
+        code=site_code,
+        latitude=row['start_latitude_num'],
+        longitude=row['start_longitude_num'],
+        source=file_source,
+        auto_add=False,
+        auto_commit=False,
+        skip_db_lookup=True)
 
-            for row in reader:
-                if len(cache.db_session.new) > 15000:
-                    cache.db_session.commit()
+    timestamp_format = '%d%b%Y:%H:%M:%S.000'
+    timestamp = datetime.strptime(row['start_dttm'],
+                                  timestamp_format)
 
-                site_code = site_code_hash(
-                    row['major_area_code'],
-                    row['minor_bay_code'],
-                    row['station_code'],
-                    row['start_latitude_num'],
-                    row['start_longitude_num'])
+    # skip dates from files that are not the 2009 files
+    if timestamp.year == 2009 and not '20110524' in csv_file_path:
+        return
 
-                site = cache.CacheSite(
-                    network=TPWD_NETWORK,
-                    code=site_code,
-                    latitude=row['start_latitude_num'],
-                    longitude=row['start_longitude_num'],
-                    source=file_source,
-                    auto_add=True,
-                    auto_commit=False,
-                    skip_db_lookup=True)
+    for tpwd_parameter_code in tpwd_parameter_codes:
+        wdft_parameter_code = WDFT_PARAMETERS[tpwd_parameter_code][0]
+        wdft_parameter_name = PARAMETERS_DICT[wdft_parameter_code]
 
-                timestamp_format = '%d%b%Y:%H:%M:%S.000'
-                timestamp = datetime.strptime(row['start_dttm'],
-                                              timestamp_format)
+        tpwd_units_code = WDFT_PARAMETERS[tpwd_parameter_code][1]
+        wdft_converted_units_code = UNITS_DICT[tpwd_units_code][1]
+        wdft_converted_units_name = UNITS_DICT[wdft_converted_units_code][0]
+        conversion_func = UNITS_DICT[tpwd_units_code][2]
 
-                # skip dates from files that are not the 2009 files
-                if timestamp.year == 2009 and not '20110524' in csv_file:
-                    continue
+        if not conversion_func:
+            conversion_func = lambda x: x
 
-                for code, cache_var in variables.items():
-                    row_index = 'start_%s_num' % code
-                    if row[row_index]:
-                        timeseries = cache.CacheTimeSeries(
-                            site=site,
-                            variable=cache_var,
-                            auto_add=True,
-                            auto_commit=False,
-                            skip_db_lookup=True)
-                        timeseries.values.append(cache.DBValue(
-                            timestamp=timestamp,
-                            value=row[row_index],
-                            timeseries=timeseries))
+        units = cache.CacheUnits(
+            code=wdft_converted_units_code,
+            abbreviation=wdft_converted_units_code,
+            name=wdft_converted_units_name)
 
-        cache.db_session.commit()
+        variable = cache.CacheVariable(
+            name=wdft_parameter_name,
+            code=wdft_parameter_code,
+            vocabulary=TPWD_VOCABULARY)
+
+        row_index = 'start_%s_num' % tpwd_parameter_code
+        if row[row_index]:
+            cache.db_session.add(site)
+            timeseries = cache.CacheTimeSeries(
+                site=site,
+                variable=variable,
+                auto_add=True,
+                auto_commit=False,
+                skip_db_lookup=True)
+            timeseries.values.append(cache.DBValue(
+                timestamp=timestamp,
+                value=conversion_func(float(row[row_index])),
+                timeseries=timeseries))
 
 
 def site_code_hash(major_area_code, minor_bay_code, station_code,
@@ -115,9 +171,17 @@ def site_code_hash(major_area_code, minor_bay_code, station_code,
 
 
 def export_to_cache():
-    cache.init_cache(CACHE_DATABASE_FILE, ECHO_SQLALCHEMY)
-    for site in site_list:
+    for site in SITE_LIST:
+        cache.init_cache(CACHE_DATABASE_FILE, ECHO_SQLALCHEMY)
+        # print "cache._cache size: %s" % reduce(
+        #     (lambda x, y: x+y), (len(v) for v in cache._cache.values()))
         cache.clear_memory_cache()
+        # print "gc.get_count(): [%s, %s, %s]" % gc.get_count()
+        # print "garbage collecting..."
+        gc.collect()
+        # print "gc.get_count(): [%s, %s, %s]" % gc.get_count()
+        # print "cache._cache size: %s" % reduce(
+        #     (lambda x, y: x+y), (len(v) for v in cache._cache.values()))
         commit_data_for_site(site)
 
 

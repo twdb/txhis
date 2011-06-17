@@ -1,5 +1,5 @@
 """
-export tceq data to gems format
+export tceq data to pyhis cache format
 """
 import csv
 import datetime
@@ -21,14 +21,16 @@ from sqlite3 import dbapi2 as sqlite
 
 from pyhis import cache
 
-TCEQ_DATABASE_FILE = "tceq_swqm.db"
+TCEQ_DATABASE_DIR = "tceq_swqm/"
+TCEQ_DATABASE_FILE = os.path.join(TCEQ_DATABASE_DIR, "tceq_swqm.db")
 TCEQ_DATABASE_URI = 'sqlite:///' + TCEQ_DATABASE_FILE
 TCEQ_DATA_DIR = '/home/wilsaj/data/tceq/'
 TCEQ_PARAMETER_FILE = 'sw_parm_format.txt'
 
 ECHO_SQLALCHEMY = False
 
-CACHE_DATABASE_FILE = "tceq_pyhis_cache.db"
+CACHE_DIR = "cache_files/"
+CACHE_DATABASE_FILE = os.path.join(CACHE_DIR, "tceq_pyhis_cache.db")
 CACHE_DATABASE_URI = 'sqlite:///' + CACHE_DATABASE_FILE
 TCEQ_SOURCE = 'http://his.crwr.utexas.edu/TRACS/cuahsi_1_0.asmx?WSDL'
 TCEQ_NETWORK = 'TCEQWaterQuality'
@@ -37,17 +39,16 @@ TCEQ_VOCABULARY = 'TCEQWaterQuality'
 tceq_engine = create_engine(TCEQ_DATABASE_URI, convert_unicode=True,
                             module=sqlite, echo=ECHO_SQLALCHEMY)
 TceqSession = sessionmaker(autocommit=False, autoflush=False,
-                            bind=tceq_engine)
+                           bind=tceq_engine)
 tceq_session = TceqSession()
 
 Base = declarative_base(bind=tceq_engine)
 
 # configure logging
-
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
-fh = logging.FileHandler('./tceq_warnings.txt')
+fh = logging.FileHandler(os.path.join(CACHE_DIR, 'tceq_warnings.txt'))
 fh.setLevel(logging.WARNING)
 formatter = logging.Formatter(LOG_FORMAT)
 fh.setFormatter(formatter)
@@ -114,11 +115,11 @@ WDFT_PARAMETERS = {
     # |TEMPERATURE, WATER (DEGREES FAHRENHEIT)|DEG F|Water|N/A Calculation
     '00011': ('water_temperature', 'degF'),
     # |TURBIDITY, FIELD SENSOR, CONTINUOUS (NTU)|NTU|Water|N/A Calculation
-    '13854': ('water_turbidity', 'ntu'),
+    '13854': ('turbidity', 'ntu'),
     # |TURBIDITY,FIELD NEPHELOMETRIC TURBIDITY UNITS, N|NTU|Water|N/A Calculation
-    '82078': ('water_turbidity', 'ntu'),
+    '82078': ('turbidity', 'ntu'),
     # |TURBIDITY,LAB NEPHELOMETRIC TURBIDITY UNITS, NTU|NTU|Water|N/A Calculation
-    '82079': ('water_turbidity', 'ntu'),
+    '82079': ('turbidity', 'ntu'),
     # |OXYGEN, DISSOLVED (MG/L)|MG/L|Water|N/A Calculation
     '00300': ('water_dissolved_oxygen_concentration', 'mgl'),
     # |OXYGEN, DISSOLVED, OPTICAL SENSOR|MG/L|Water|N/A Calculation
@@ -134,6 +135,7 @@ WDFT_PARAMETERS = {
     # XXX: todo
            # '00070',  # |TURBIDITY, (JACKSON CANDLE UNITS)|JTU|Water|N/A Calculation
            # '00076',  # |TURBIDITY,HACH TURBIDIMETER (FORMAZIN TURB UNIT)|FTU|Water|N/A Calculation
+
            # '13856',  # |TURBIDITY, FIELD SENSOR, CONTINUOUS (FNU)|FNU|Water|7027
            # '47004',  # |SOLIDS,TOTAL, DISS, ELECTRICAL-CONDUCTIVITY,MG/L|MG/L|Water|N/A Calculation
            # '00064',  # |DEPTH OF STREAM, MEAN (FT)|FT|Water|N/A Calculation
@@ -144,7 +146,7 @@ WDFT_PARAMETERS = {
 UNITS_DICT = {
     # 'key': ('parameter name', standard_units, function_that_converts_to_standard_units)
     'ppt': ('parts per thousand', 'ppt', None),
-    'degC': ('degrees celcius', 'degC', None),
+    'degC': ('degrees celsius', 'degC', None),
     'degF': ('degrees fahrenheit', 'degC', lambda x: x * (5.0/9) + 32),
     'ft': ('feet', 'ft', None),
     'ntu': ('nephelometric turbidity units', 'ntu', None),
@@ -156,14 +158,13 @@ UNITS_DICT = {
 PARAMETERS_DICT = {
     # 'parameter_code': 'parameter_name
     'air_temperature': 'Air Temperature',
-    'seawater_salinity': 'Salinity',
+    'salinity': 'Salinity',
     'water_dissolved_oxygen_concentration': 'Dissolved Oxygen Concentration',
     'water_dissolved_oxygen_percent_saturation': 'Dissolved Oxygen Saturation Concentration',
     'water_specific_conductance': 'Specific Conductance(Normalized @25degC)',
     'water_temperature': 'Water Temperature',
-    'water_turbidity': 'Turbidity',
+    'turbidity': 'Turbidity',
 }
-
 
 
 # ftp://ftp.tceq.state.tx.us/pub/WaterResourceManagement/WaterQuality/DataCollection/CleanRivers/public/stnsmeta.txt
@@ -492,12 +493,11 @@ def convert_to_pyhis():
         wdft_converted_units_code = UNITS_DICT[tceq_units_code][1]
         wdft_converted_units_name = UNITS_DICT[wdft_converted_units_code][0]
         conversion_func = UNITS_DICT[tceq_units_code][2]
-
-        print("converting %s values for param: %s (%s)" % (
-            results_count, tceq_parameter_code, wdft_converted_units_code))
-
         if not conversion_func:
             conversion_func = lambda x: x
+
+        print("converting %s values for param: %s (%s)" % (
+            results_count, tceq_parameter_code, wdft_parameter_name))
 
         units = cache.CacheUnits(
             code=wdft_converted_units_code,
@@ -571,31 +571,6 @@ def convert_to_pyhis():
             timeseries.values.append(value)
 
         tceq_session.commit()
-
-
-def create_pyhis_sites(stations, file_source):
-    for station in stations:
-        site = cache.CacheSite(
-            site_id=station.tceq_station_id,
-            code=station.tceq_station_id,
-            name=station.short_description,
-            network=TCEQ_NETWORK,
-            source=file_source,
-            auto_commit=False,
-            skip_db_lookup=True)
-        cache.db_session.add(site)
-
-        for event in station.events.all():
-            pass
-    cache.db_session.commit()
-
-
-def cache_stations(stations):
-    """
-    returns a dict with station_id as the keys and station db object
-    as the values
-    """
-    return dict([(station.id, station) for station in stations])
 
 
 if __name__ == '__main__':
