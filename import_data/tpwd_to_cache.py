@@ -64,6 +64,7 @@ PARAMETERS_DICT = {
 
 def commit_data_for_site(site_name):
     """commits data values to the database"""
+    timestamp_format = '%d%b%Y:%H:%M:%S.000'
     csv_files = glob.glob('/'.join(
         [TPWD_DATA_DIR, '/request_*/%s*' % site_name]))
 
@@ -77,6 +78,7 @@ def commit_data_for_site(site_name):
             total_lines = i + 1
 
         line_count = 0
+        previous_timestamp = None
         with open(csv_file, 'rb') as f:
             reader = csv.DictReader(f)
 
@@ -84,11 +86,15 @@ def commit_data_for_site(site_name):
                 if len(cache.db_session.new) > 5000:
                     cache.db_session.commit()
 
-                cache_row(row, csv_file)
+                timestamp = datetime.strptime(row['start_dttm'],
+                                              timestamp_format)
+                if timestamp != previous_timestamp:
+                    cache_row(row, csv_file, timestamp)
+                    previous_timestamp = timestamp
         cache.db_session.commit()
 
 
-def cache_row(row, csv_file_path):
+def cache_row(row, csv_file_path, timestamp):
     """commit a single row of data to the database"""
     file_source = cache.CacheSource(url=TPWD_SOURCE)
     tpwd_parameter_codes = (
@@ -114,10 +120,6 @@ def cache_row(row, csv_file_path):
         auto_add=False,
         auto_commit=False,
         skip_db_lookup=True)
-
-    timestamp_format = '%d%b%Y:%H:%M:%S.000'
-    timestamp = datetime.strptime(row['start_dttm'],
-                                  timestamp_format)
 
     # skip dates from files that are not the 2009 files
     if timestamp.year == 2009 and not '20110524' in csv_file_path:
