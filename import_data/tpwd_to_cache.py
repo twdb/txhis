@@ -114,8 +114,8 @@ def cache_row(row, csv_file_path, timestamp):
     site = cache.CacheSite(
         network=TPWD_NETWORK,
         code=site_code,
-        latitude=row['start_latitude_num'],
-        longitude=row['start_longitude_num'],
+        latitude=dms_to_decimal_degrees(row['start_latitude_num']),
+        longitude=dms_to_decimal_degrees(row['start_longitude_num']),
         source=file_source,
         auto_add=False,
         auto_commit=False,
@@ -162,14 +162,27 @@ def cache_row(row, csv_file_path, timestamp):
                 timeseries=timeseries))
 
 
+def dms_to_decimal_degrees(dms_value):
+    """
+    returns a string representation of a TPWD latitude or longitude
+    representation
+    """
+    degrees, minutes, seconds = dms_value[:2], dms_value[2:4], dms_value[4:6]
+    decimal_degrees = int(degrees) + \
+                      ((float(minutes) * 60) + float(seconds)) / 3600.0
+    if decimal_degrees > 50:
+        decimal_degrees *= -1
+    return str(decimal_degrees)
+
+
 def site_code_hash(major_area_code, minor_bay_code, station_code,
                    latitude, longitude):
-    """return hashed site code, this should provide a unique site code
+    """
+    returns hashed site code, this should provide a unique site code
     for each site and lat/long, though there is a small chance for
-    collisions"""
-    return '_'.join([major_area_code, minor_bay_code, station_code,
-                     latitude.split('.')[-1][-4:],
-                     longitude.split('.')[-1][:-4]])
+    collisions
+    """
+    return '_'.join([latitude.replace('.', ''), longitude.replace('.', '')])
 
 
 def export_to_cache():
