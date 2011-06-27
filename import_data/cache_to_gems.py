@@ -12,6 +12,7 @@ from sqlalchemy.ext.declarative import (declarative_base, declared_attr,
                                         synonym_for)
 from sqlalchemy.orm import relationship, backref, sessionmaker, synonym
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import asc, desc
 from sqlite3 import dbapi2 as sqlite
 
 from pyhis import cache
@@ -74,6 +75,8 @@ class GEMSSite(Base):
     longitude = Column(Float)
     ODM_Param_FromDate = Column(DateTime)
     ODM_Param_ToDate = Column(DateTime)
+
+    values = relationship('GEMSData', backref='site', lazy='dynamic')
 
     def __init__(self, ODM_SQL_SiteID=None, ODM_Network=None, ODM_URL=None,
                  ODM_Site_Code=None, ODM_Site_Name=None,
@@ -224,5 +227,36 @@ def page_query(q):
         r = False
 
 
+def set_from_and_to_dates():
+    try:
+        index_str = 'CREATE INDEX ' +\
+                    '"ix_GEMSData__ODM_SQL_SiteID_ODM_Param_asc" ON ' +\
+                    '"tbl_TexasHIS_Vector_TWDB_ODM_Data" ("ODM_SQL_SiteID",' +\
+                    '"ODM_Param_Date" ASC);'
+        gems_engine.execute(index_str)
+    except OperationalError:
+        pass
+    sites_query = gems_session.query(GEMSSite)
+    site_count = sites_query.count()
+    for index, site in enumerate(page_query(sites_query)):
+        if index == 1 or index % 1000 == 0:
+            print "setting from and to dates for %s of %s sites" % (
+                index, site_count)
+
+        if len(gems_session.dirty) > 1500:
+            gems_session.commit()
+
+        from_value = site.values.order_by(asc('ODM_Param_Date')).first()
+        to_value = site.values.order_by(desc('ODM_Param_Date')).first()
+        if from_value:
+            site.ODM_Param_FromDate = from_value.ODM_Param_Date
+            site.ODM_Param_ToDate = to_value.ODM_Param_Date
+        else:
+            # if for some reason there are no values for a site
+            gems_session.delete(site)
+    gems_session.commit()
+
+
 if __name__ == '__main__':
     export_cache()
+    set_from_and_to_dates()
