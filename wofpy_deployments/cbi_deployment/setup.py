@@ -17,5 +17,6 @@ setup(
     install_requires=[
         'Flask',
         'soaplib',
-        'SQLAlchemy']
+        'SQLAlchemy',
+        'WOFpy']
 )
