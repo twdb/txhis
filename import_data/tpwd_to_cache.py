@@ -119,7 +119,7 @@ def cache_row(row, csv_file_path, timestamp):
         source=file_source,
         auto_add=False,
         auto_commit=False,
-        skip_db_lookup=True)
+        skip_db_lookup=False)
 
     # skip dates from files that are not the 2009 files
     if timestamp.year == 2009 and not '20110524' in csv_file_path:
@@ -155,8 +155,8 @@ def cache_row(row, csv_file_path, timestamp):
                 variable=variable,
                 auto_add=True,
                 auto_commit=False,
-                skip_db_lookup=True)
-            timeseries.values.append(cache.DBValue(
+                skip_db_lookup=False)
+            cache.db_session.add(cache.DBValue(
                 timestamp=timestamp,
                 value=conversion_func(float(row[row_index])),
                 timeseries=timeseries))

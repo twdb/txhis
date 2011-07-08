@@ -477,9 +477,8 @@ def convert_to_pyhis():
     # create_pyhis_sites(stations, file_source)
 
     found = False
+    cache.init_cache(CACHE_DATABASE_FILE, ECHO_SQLALCHEMY)
     for tceq_parameter_code in WDFT_PARAMETERS:
-
-        cache.init_cache(CACHE_DATABASE_FILE, ECHO_SQLALCHEMY)
         file_source = cache.CacheSource(url=TCEQ_SOURCE)
         parameter = tceq_session.query(Parameter).filter_by(
             parameter_code=tceq_parameter_code).one()
@@ -548,16 +547,21 @@ def convert_to_pyhis():
                               "timestamp. event tag_id: %s" % event.tag_id)
                 continue
 
-            site = cache.CacheSite(
-                site_id=station.tceq_station_id,
-                code=station.tceq_station_id,
-                name=station.short_description,
-                network=TCEQ_NETWORK,
-                source=file_source,
+            site = cache.db_session.query(cache.DBSite).filter_by(
                 latitude=station.latitude,
-                longitude=station.longitude,
-                auto_commit=False,
-                auto_add=True)
+                longitude=station.longitude).first()
+
+            if not site:
+                site = cache.CacheSite(
+                    site_id=station.tceq_station_id,
+                    code=station.tceq_station_id,
+                    name=station.short_description,
+                    network=TCEQ_NETWORK,
+                    source=file_source,
+                    latitude=station.latitude,
+                    longitude=station.longitude,
+                    auto_commit=False,
+                    auto_add=True)
 
             timeseries = cache.CacheTimeSeries(
                 site=site,
@@ -567,10 +571,10 @@ def convert_to_pyhis():
 
             value = cache.DBValue(
                 timestamp=timestamp,
-                value=conversion_func(result.value))
-            timeseries.values.append(value)
+                value=conversion_func(result.value),
+                timeseries=timeseries)
 
-        tceq_session.commit()
+        cache.db_session.commit()
 
 
 if __name__ == '__main__':
