@@ -40,7 +40,7 @@ soap_app = soaplib.core.Application(services=[CBIWOFService],
 soap_wsgi_app = soaplib.core.server.wsgi.Application(soap_app)
 
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-    '/soap/cbi': soap_wsgi_app
+    '/soap': soap_wsgi_app
     })
 
 if __name__ == '__main__':

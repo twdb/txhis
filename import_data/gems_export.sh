@@ -1,8 +1,8 @@
 #!/bin/sh
 
-python ./tpwd_to_cache.py
-python ./tceq_to_cache.py
-python ./twdb_to_cache.py
+#python ./tpwd_to_cache.py
+#python ./tceq_to_cache.py
+#python ./twdb_to_cache.py
 python ./cache_to_gems.py
 
 # first, we need to delete sites that don't have any data
