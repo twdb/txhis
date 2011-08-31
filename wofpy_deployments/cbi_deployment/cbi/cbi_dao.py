@@ -1,7 +1,8 @@
-import urllib2
-import time
+import datetime
 import ConfigParser
+import urllib2
 
+import dateutil.tz
 from lxml import etree
 from StringIO import StringIO
 from sqlalchemy import create_engine
@@ -91,33 +92,31 @@ class CbiDao(BaseDao):
 
     def get_series_by_sitecode(self, site_code):
         """
-        Returns a list of SeriesCatalogs for the given site code.
+        Returns a list of Seriess for the given site code.
         """
-        seriesResultArr = cache.SeriesCatalog.query.filter(
-            cache.SeriesCatalog.SiteCode == site_code).all()
-        for sr in seriesResultArr:
-            #TODO: Get current time in GMT
-            if sr.IsCurrent:
-                et = time.gmtime(time.time())
-                sr.EndDateTimeUTC = time.strftime("%Y-%m-%d %H:%M:%S", et)
-            sr.Source = self.get_source_by_id()
+        seriesResultArr = cache.Series.query.filter(
+            cache.Series.SiteCode == site_code).all()
+        for seriesResult in seriesResultArr:
+            if seriesResult.IsCurrent:
+                seriesResult.EndDateTimeUTC = datetime.datetime.utcnow().\
+                                              replace(microsecond=0)
+            seriesResult.Source = self.get_source_by_id()
         return seriesResultArr
 
     def get_series_by_sitecode_and_varcode(self, site_code, var_code):
         """
-        Returns a list of SeriesCatalogs for the given site code and variable
+        Returns a list of Seriess for the given site code and variable
         code combination.
         """
 
-        seriesResultArr = cache.SeriesCatalog.query.filter(and_(
-             cache.SeriesCatalog.SiteCode == site_code,
-             cache.SeriesCatalog.VariableCode == var_code)).all()
-        for sr in seriesResultArr:
-            if sr.IsCurrent:
-                #Get current time in GMT
-                et = time.gmtime(time.time())
-                sr.EndDateTimeUTC = time.strftime("%Y-%m-%d %H:%M:%S", et)
-            sr.Source = self.get_source_by_id()
+        seriesResultArr = cache.Series.query.filter(and_(
+             cache.Series.SiteCode == site_code,
+             cache.Series.VariableCode == var_code)).all()
+        for seriesResult in seriesResultArr:
+            if seriesResult.IsCurrent:
+                seriesResult.EndDateTimeUTC = datetime.datetime.utcnow().\
+                                              replace(microsecond=0)
+            seriesResult.Source = self.get_source_by_id()
         return seriesResultArr
 
     def get_datavalues(self, site_code, var_code, begin_date_time=None,
@@ -131,27 +130,33 @@ class CbiDao(BaseDao):
         #in the getobservation request.  The expected behavior of WOF:GetValues
         #is to return all data values for the full period of record, but
         #the CBI SOS:GetObservation method only returns the last 9.
-        if not begin_date_time or not end_date_time:
-            #need to find the start and end dates from the cache
-            series_cat = self.get_series_by_sitecode_and_varcode(
-                site_code, var_code)[0]
-            if not begin_date_time:
-                begin_date_time = series_cat.BeginDateTimeUTC
-                begin_date_time = str(begin_date_time).replace(' ', 'T')
-            if not end_date_time:
-                end_date_time = series_cat.EndDateTimeUTC
-                end_date_time = str(end_date_time).replace(' ', 'T')
-        if not begin_date_time.find(':'):
+
+        #need to find the start and end dates from the cache
+        series_cat = self.get_series_by_sitecode_and_varcode(
+            site_code, var_code)[0]
+
+        if not begin_date_time or \
+               str(begin_date_time) < str(series_cat.BeginDateTimeUTC):
+            begin_date_time = str(series_cat.BeginDateTimeUTC)
+            begin_date_time = str(begin_date_time).replace(' ', 'T')
+
+        if not end_date_time or \
+               str(end_date_time) < str(series_cat.EndDateTimeUTC):
+            end_date_time = series_cat.EndDateTimeUTC
+            end_date_time = str(end_date_time).replace(' ', 'T')
+
+        if begin_date_time.find(':') == -1:
             begin_date_time = begin_date_time + 'T00:00:00'
-        if not end_date_time.find(':'):
+        if end_date_time.find(':') == -1:
             end_date_time = end_date_time + 'T23:59:59'
+
         #Call GetObservation
         response = self.cbi_sos_client.get_observation(
             site_code, var_code,
             begin_date_time,
             end_date_time)
         if not response:
-            return None
+            return []
         tree = etree.parse(StringIO(response.read()))
         datavalue_list = \
             cbi_sos_parser.parse_datavalues_from_get_observation(

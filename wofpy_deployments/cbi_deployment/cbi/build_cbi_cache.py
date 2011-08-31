@@ -9,15 +9,16 @@ from lxml import etree
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from cbi import cbi_cache_models as model
+# from cbi import cbi_cache_models as model
+import cbi_cache_models as model
 
 IOOS_SITE_FILE_URL = 'http://lighthouse.tamucc.edu/ioosobsreg.xml'
 CBI_SOS_CAPABILITIES_URL = 'http://lighthouse.tamucc.edu/sos'
 GCOOS_ONTOLOGY_FILE_URL = \
     'http://mmisw.org/ont?form=rdf&uri=http://mmisw.org/ont/gcoos/parameter'
 
-#CBI_CACHE_DIR = tempfile.gettempdir()
-CBI_CACHE_DIR = '/space/www/wofpy_deployments/cbi_deployment/cache/'
+CBI_CACHE_DIR = tempfile.gettempdir()
+#CBI_CACHE_DIR = '/space/www/wofpy_deployments/cbi_deployment/cache/'
 CBI_CACHE_DATABASE_URI = 'sqlite:////' + os.path.join(
     CBI_CACHE_DIR, 'cbi_dao_cache.db')
 LOCAL_SITE_FILE_PATH = os.path.join(
@@ -454,7 +455,7 @@ if __name__ == '__main__':
 
         #Now try to add series
 
-        print "Adding SeriesCatalogs to local cache."
+        print "Adding Series to local cache."
 
         cache_series_cats = []
 
@@ -473,7 +474,7 @@ if __name__ == '__main__':
 
             #Need to check because of situation mentioned above
             if site and variable:
-                series_cat = model.SeriesCatalog()
+                series_cat = model.Series()
 
                 series_cat.Site = site
                 series_cat.SiteID = site.SiteID

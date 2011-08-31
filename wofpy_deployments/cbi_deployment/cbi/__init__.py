@@ -2,43 +2,29 @@ import logging
 import os
 import tempfile
 
-from werkzeug.wsgi import DispatcherMiddleware
 import soaplib
 from soaplib.core.server import wsgi
-from wof import WOF
-from wof.soap import create_wof_service_class
-from wof.flask import config
-from wof.flask import create_app
+from werkzeug.wsgi import DispatcherMiddleware
+import wof
 
 from cbi_dao import CbiDao
 
-#CBI_DEPLOYMENT_DIR = tempfile.gettempdir()
-CBI_DEPLOYMENT_DIR = '/space/www/wofpy_deployments/cbi_deployment'
-CBI_CACHE_DIR = os.path.join(CBI_DEPLOYMENT_DIR,
-                             'cache/')
+# CBI_DEPLOYMENT_DIR = '/space/www/wofpy_deployments/cbi_deployment'
+# CBI_CACHE_DIR = os.path.join(CBI_DEPLOYMENT_DIR,
+#                              'cache/')
+CBI_DEPLOYMENT_DIR = './'
+CBI_CACHE_DIR = tempfile.gettempdir()
+
 CBI_CONFIG_FILE = os.path.join(CBI_DEPLOYMENT_DIR,
                                'cbi_config.cfg')
+CBI_CONFIG_FILE = 'cbi_config.cfg'
+
 CBI_CACHE_DATABASE_URI = 'sqlite:////' + os.path.join(
     CBI_CACHE_DIR, 'cbi_dao_cache.db')
 
 logging.basicConfig(level=logging.DEBUG)
 
+cbi_dao = CbiDao(CBI_CONFIG_FILE, database_uri=CBI_CACHE_DATABASE_URI)
+app = wof.create_wof_app(cbi_dao, CBI_CONFIG_FILE)
 
-dao = CbiDao(CBI_CONFIG_FILE, database_uri=CBI_CACHE_DATABASE_URI)
-cbi_wof = WOF(dao)
-cbi_wof.config_from_file(CBI_CONFIG_FILE)
-
-app = create_app(cbi_wof)
-app.config.from_object(config.DevConfig)
-
-CBIWOFService = create_wof_service_class(cbi_wof)
-
-soap_app = soaplib.core.Application(services=[CBIWOFService],
-                                    tns='http://www.cuahsi.org/his/1.0/ws/',
-                                    name='WaterOneFlow')
-
-soap_wsgi_app = soaplib.core.server.wsgi.Application(soap_app)
-
-app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-    '/soap/wateroneflow': soap_wsgi_app
-    })
+app.run()

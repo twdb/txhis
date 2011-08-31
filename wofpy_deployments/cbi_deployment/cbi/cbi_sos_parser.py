@@ -24,15 +24,15 @@ def parse_datavalues_from_get_observation(tree, site_code, var_code):
     output: list of DataValues
     """
 
-    #The data values from the response xml are organized into 'blocks'
-    # with each block containing several fields (PlatformName, time,
-    # latitude, longitude, depth, observedProperty1).
-    # These fields are described in swe:field elements
-
+    # The data values from the response xml are organized into
+    # 'blocks' with each block containing several fields
+    # (PlatformName, time, latitude, longitude, depth,
+    # observedProperty1).  These fields are described in swe:field
+    # elements
     fields = tree.findall('.//' + nspath('field', namespaces['swe']))
     field_names = [f.attrib['name'] for f in fields]
 
-    #Now that we have the fields, we can parse the values appropriately
+    # Now that we have the fields, we can parse the values appropriately
     text_block = tree.find('.//' + nspath('encoding', namespaces['swe'])
                     + '/' + nspath('TextBlock', namespaces['swe']))
 

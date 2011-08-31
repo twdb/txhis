@@ -1,6 +1,8 @@
 import urllib
 import time
 
+import requests
+
 
 class CbiSosClient(object):
 
@@ -53,7 +55,6 @@ class CbiSosClient(object):
         """
 
         #http://lighthouse.tamucc.edu/sos?request=GetObservation&service=SOS&version=1.0.0&observedProperty=water_temperature&offering=014
-
         param_dict = {'request': 'GetObservation',
                       'service': 'SOS',
                       'version': '1.0.0',
@@ -65,7 +66,7 @@ class CbiSosClient(object):
             event_time_string = '%s/%s' % (
                 start_datetime + 'Z',
                 end_datetime + 'Z')
-            param_dict['eventtime'] = event_time_string
+            param_dict['eventTime'] = event_time_string
         params = urllib.urlencode(param_dict)
 
         try:
