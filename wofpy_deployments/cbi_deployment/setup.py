@@ -15,9 +15,10 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'dateutil',
+        'python-dateutil',
         'Flask',
         'soaplib',
         'SQLAlchemy',
+        'requests',
         'WOFpy']
 )
