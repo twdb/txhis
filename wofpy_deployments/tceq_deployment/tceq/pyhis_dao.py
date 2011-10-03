@@ -1,12 +1,8 @@
-import datetime
-import os
-
 import ConfigParser
-from sqlalchemy import create_engine, distinct, func
-from sqlalchemy.orm import mapper, scoped_session, sessionmaker
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import and_
 
-from pyhis import cache
 from wof.dao import BaseDao
 
 import pyhis_models as model
