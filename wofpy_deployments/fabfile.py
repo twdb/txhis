@@ -73,14 +73,14 @@ def build_cbi_cache():
     deployment_app = 'cbi_deployment'
     deployment_dir = os.path.join(WOFPY_DEPLOYMENTS_DIR,
                                   deployment_app,)
-    deployment_python = os.path.join(deployment_dir,
-                                     'cbi_env/bin/python')
-    build_cbi_cache_script = 'cbi/build_cbi_cache.py'
+    # deployment_python = os.path.join(deployment_dir,
+    #                                  'cbi_env/bin/python')
     cbi_cache_dir = '/space/www/wofpy_deployments/cbi_deployment/cache/'
 
     with lcd(deployment_app):
-        put(build_cbi_cache_script, deployment_dir)
+        put('cbi/build_cbi_cache.py', deployment_dir)
+        put('cbi/cbi_cache_models.py', deployment_dir)
 
     with cd(deployment_dir):
         run('mkdir -p %s' % cbi_cache_dir)
-        run(deployment_python + ' build_cbi_cache.py --dropall True')
+        run('python %s/build_cbi_cache.py --dropall True' % deployment_dir)
