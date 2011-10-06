@@ -19,7 +19,7 @@ from sqlite3 import dbapi2 as sqlite
 
 from pyhis import cache
 
-TCEQ_DATABASE_DIR = "tceq_swqm/"
+TCEQ_DATABASE_DIR = "cache_files/tceq_swqm/"
 TCEQ_DATABASE_FILE = os.path.join(TCEQ_DATABASE_DIR, "tceq_swqm.db")
 TCEQ_DATABASE_URI = 'sqlite:///' + TCEQ_DATABASE_FILE
 TCEQ_DATA_DIR = '/home/wilsaj/data/tceq/'
