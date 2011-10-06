@@ -1,8 +1,6 @@
 import datetime
 import ConfigParser
-import urllib2
 
-import dateutil.tz
 from lxml import etree
 from StringIO import StringIO
 from sqlalchemy import create_engine
