@@ -183,7 +183,7 @@ class Series(Base, wof_base.BaseSeries):
 
     IsCurrent = Column(Boolean)
 
-    ValueCount = Column(Integer)
+    ValueCount = Column(Integer, default=2)
 
     Site = relationship("Site",
                 primaryjoin="Site.SiteID==Series.SiteID")

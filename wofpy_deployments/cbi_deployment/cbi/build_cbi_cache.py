@@ -533,6 +533,19 @@ if __name__ == '__main__':
 
                 series_cat.IsCurrent = series.is_current
 
+                if series.end_time:
+                    end_datetime = datetime.datetime.strptime(
+                        series.end_time, "%Y-%m-%dT%H:%M:%SZ")
+                else:
+                    end_datetime = datetime.datetime.now()
+
+                if series.start_time:
+                    start_datetime = datetime.datetime.strptime(
+                        series.start_time, "%Y-%m-%dT%H:%M:%SZ")
+
+                    time_delta = end_datetime - start_datetime
+                    series_cat.ValueCount = time_delta.days
+
                 cache_series_cats.append(series_cat)
 
         db_session.add_all(cache_series_cats)
