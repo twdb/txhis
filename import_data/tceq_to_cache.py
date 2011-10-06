@@ -576,8 +576,7 @@ def convert_to_pyhis():
 
 
 if __name__ == '__main__':
-    # param_file = os.path.join(TCEQ_DATA_DIR, TCEQ_PARAMETER_FILE)
-    # create_tceq_parameters(param_file)
+    create_tceq_database()
     convert_to_pyhis()
 
 
