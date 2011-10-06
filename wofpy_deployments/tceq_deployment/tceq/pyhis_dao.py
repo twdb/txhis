@@ -1,5 +1,6 @@
 import ConfigParser
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, Index
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import and_
 
@@ -23,10 +24,12 @@ class PyhisDao(BaseDao):
         }
 
     def __init__(self, db_connection_string, config_file_path):
-        self.engine = create_engine(db_connection_string, convert_unicode=True)
+        self.engine = create_engine(db_connection_string, echo=True,
+                                    convert_unicode=True)
         #TODO: Use pool_size for non-sqlite database connection
         self.db_session = scoped_session(sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine))
+        self._create_indexes()
         model.init_model(self.db_session)
         config = ConfigParser.RawConfigParser()
         config.read(config_file_path)
@@ -46,6 +49,15 @@ class PyhisDao(BaseDao):
 
     def __del__(self):
         self.db_session.close()
+
+    def _create_indexes(self):
+        # create an index on timeseries values if it doesn't exist
+        try:
+            i = Index('ix_timeseries_values_id',
+                      model.DataValue.__table__.c.timeseries_id)
+            i.create(self.engine)
+        except OperationalError:
+            pass
 
     def get_all_sites(self):
         return model.Site.query.all()

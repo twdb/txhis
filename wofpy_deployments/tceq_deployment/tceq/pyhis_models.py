@@ -270,13 +270,20 @@ class Series(Base, wof_base.BaseSeries):
         except AttributeError:
             return None
 
+    @property
+    def ValueCount(self):
+        try:
+            return self.value_count
+        except AttributeError:
+            self.value_count = self.DataValues.count()
+            return self.value_count
+
     # def __init__(self, site=None, variable=None, value_count=None,
     #              begin_date_time_utc=None, end_date_time_utc=None,
     #              source=None):
-
     #     self.Site = site
     #     self.Variable = variable
-    #     self.ValueCount = value_count
+    #     self.value_count = value_count
     #     self.BeginDateTimeUTC = begin_date_time_utc
     #     self.EndDateTimeUTC = end_date_time_utc
 
