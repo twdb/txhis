@@ -74,7 +74,7 @@ class PyhisDao(BaseDao):
             model.Site.SiteCode == site_code).one()
 
         if siteResult:
-            return siteResult.SeriesCatalogs
+            return siteResult.Series
         return None
 
     def get_series_by_sitecode_and_varcode(self, site_code, var_code):
@@ -91,9 +91,8 @@ class PyhisDao(BaseDao):
             ).filter(
                 and_(model.DataValue.SiteID == siteResult.SiteID,
                      model.DataValue.VariableID == varResult.VariableID)).one()
-
-        seriesCat = model.SeriesCatalog(
-            siteResult, varResult, res.ValueCount, res.BeginDateTimeUTC,
+        seriesCat = model.Series(
+            siteResult, varResult, 3, res.BeginDateTimeUTC,
             res.EndDateTimeUTC, self.get_source_by_id())
 
         return [seriesCat]
@@ -104,9 +103,9 @@ class PyhisDao(BaseDao):
         variable = self.get_variable_by_code(variable_code)
 
         #first find the site and variable
-        series = self.db_session.query(model.SeriesCatalog).filter(
-            and_(model.SeriesCatalog.Site==site,
-                 model.SeriesCatalog.Variable == variable)).one()
+        series = self.db_session.query(model.Series).filter(
+            and_(model.Series.Site==site,
+                 model.Series.Variable == variable)).one()
 
 
         if site and variable:

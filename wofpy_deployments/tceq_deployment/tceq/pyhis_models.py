@@ -133,20 +133,20 @@ class DataValue(Base, wof_base.BaseDataValue):
     QualityControlLevelID = wof_base.QualityControlLevelTypes['RAW_DATA'][1]
 
     SeriesID = Column('timeseries_id', Integer, ForeignKey('timeseries.id'))
-    SeriesCatalog = relationship('SeriesCatalog',
-                                 backref=backref('DataValues', lazy='dynamic'))
+    Series = relationship('Series',
+                          backref=backref('DataValues', lazy='dynamic'))
 
     @property
     def VariableID(self):
         try:
-            return SeriesCatalog.VariableID
+            return Series.VariableID
         except AttributeError:
             return None
 
     @property
     def SiteID(self):
         try:
-            return SeriesCatalog.SiteID
+            return Series.SiteID
         except AttributeError:
             return None
 
@@ -201,7 +201,7 @@ class OffsetType(wof_base.BaseOffsetType):
     pass
 
 
-class SeriesCatalog(Base, wof_base.BaseSeriesCatalog):
+class Series(Base, wof_base.BaseSeries):
     __tablename__ = 'timeseries'
 
     SeriesID = Column('id', Integer, primary_key=True)
@@ -231,9 +231,9 @@ class SeriesCatalog(Base, wof_base.BaseSeriesCatalog):
     # Method = BaseMethod()
 
     SiteID = Column('site_id', ForeignKey('site.id'))
-    Site = relationship('Site', backref=('SeriesCatalogs'), lazy='dynamic')
+    Site = relationship('Site', backref=('Series'), lazy='dynamic')
     VariableID = Column('variable_id', ForeignKey('variable.id'))
-    Variable = relationship('Variable', backref=('SeriesCatalogs'))
+    Variable = relationship('Variable', backref=('Series'))
 
     @property
     def SiteCode(self):
