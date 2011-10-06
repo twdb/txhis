@@ -6,9 +6,7 @@ import datetime
 import glob
 import logging
 import os
-import sys
 import tempfile
-import warnings
 
 from sqlalchemy import create_engine, func, Table
 from sqlalchemy.schema import UniqueConstraint, ForeignKey
