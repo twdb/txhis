@@ -1,7 +1,6 @@
-from sqlalchemy import (Column, Integer, String, ForeignKey, Float, DateTime)
-
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import backref, relationship
 
 import wof.models as wof_base
 
