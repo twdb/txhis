@@ -39,8 +39,8 @@ def deploy(app):
     deployment_app = app + '_deployment'
     deployment_dir = os.path.join(WOFPY_DEPLOYMENTS_DIR,
                                   deployment_app,)
-    deployment_python = os.path.join(deployment_dir,
-                                     app + '_env/bin/python')
+    deployment_python = os.path.join('/space/www/wsgi_env/bin/python')
+
     # figure out the release name and version
     with lcd(deployment_app):
         dist = local('python setup.py --fullname', capture=True).strip()
