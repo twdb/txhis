@@ -21,6 +21,12 @@ def deploy_cbi():
     build_cbi_cache()
 
 
+def deploy_tceq():
+    pack('tceq')
+    deploy('tceq')
+    copy_cache_file('tceq', 'tceq_pyhis_cache.db')
+
+
 def pack(app):
     """creates new source distribution as tarball"""
     deployment_app = app + '_deployment'
@@ -84,3 +90,24 @@ def build_cbi_cache():
     with cd(deployment_dir):
         run('mkdir -p %s' % cbi_cache_dir)
         run('python %s/build_cbi_cache.py --dropall True' % deployment_dir)
+
+
+def copy_cache_file(app, cache_file):
+    """runs the build_cbi_cache script on the remote machine"""
+    deployment_app = app + '_deployment'
+    deployment_dir = os.path.join(WOFPY_DEPLOYMENTS_DIR,
+                                  deployment_app,)
+    # deployment_python = os.path.join(deployment_dir,
+    #                                  'cbi_env/bin/python')
+    remote_cache_dir = os.path.join(deployment_dir, 'cache/')
+    local_cache_dir = os.path.join(deployment_app, 'cache/')
+
+    get_filesize_command = "du -b %s | awk '{print $1}'" % cache_file
+
+    with cd(remote_cache_dir):
+        remote_size = run(get_filesize_command)
+
+    with lcd(local_cache_dir):
+        local_size = local(get_filesize_command, capture=True)
+        if local_size != remote_size:
+            put(cache_file, remote_cache_dir)
