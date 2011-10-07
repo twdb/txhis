@@ -27,6 +27,12 @@ def deploy_tceq():
     copy_cache_file('tceq', 'tceq_pyhis_cache.db')
 
 
+def deploy_tpwd():
+    pack('tpwd')
+    deploy('tpwd')
+    copy_cache_file('tpwd', 'tpwd_pyhis_cache.db')
+
+
 def pack(app):
     """creates new source distribution as tarball"""
     deployment_app = app + '_deployment'

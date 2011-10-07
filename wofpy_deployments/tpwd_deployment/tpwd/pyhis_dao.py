@@ -1,12 +1,9 @@
-import datetime
-import os
-
 import ConfigParser
-from sqlalchemy import create_engine, distinct, func
-from sqlalchemy.orm import mapper, scoped_session, sessionmaker
+from sqlalchemy import create_engine, func, Index
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import and_
 
-from pyhis import cache
 from wof.dao import BaseDao
 
 import pyhis_models as model
@@ -27,10 +24,12 @@ class PyhisDao(BaseDao):
         }
 
     def __init__(self, db_connection_string, config_file_path):
-        self.engine = create_engine(db_connection_string, convert_unicode=True)
+        self.engine = create_engine(db_connection_string, echo=True,
+                                    convert_unicode=True)
         #TODO: Use pool_size for non-sqlite database connection
         self.db_session = scoped_session(sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine))
+        self._create_indexes()
         model.init_model(self.db_session)
         config = ConfigParser.RawConfigParser()
         config.read(config_file_path)
@@ -50,6 +49,15 @@ class PyhisDao(BaseDao):
 
     def __del__(self):
         self.db_session.close()
+
+    def _create_indexes(self):
+        # create an index on timeseries values if it doesn't exist
+        try:
+            i = Index('ix_timeseries_values_id',
+                      model.DataValue.__table__.c.timeseries_id)
+            i.create(self.engine)
+        except OperationalError:
+            pass
 
     def get_all_sites(self):
         return model.Site.query.all()
@@ -78,7 +86,7 @@ class PyhisDao(BaseDao):
             model.Site.SiteCode == site_code).one()
 
         if siteResult:
-            return siteResult.SeriesCatalogs
+            return siteResult.Series
         return None
 
     def get_series_by_sitecode_and_varcode(self, site_code, var_code):
@@ -95,9 +103,8 @@ class PyhisDao(BaseDao):
             ).filter(
                 and_(model.DataValue.SiteID == siteResult.SiteID,
                      model.DataValue.VariableID == varResult.VariableID)).one()
-
-        seriesCat = model.SeriesCatalog(
-            siteResult, varResult, res.ValueCount, res.BeginDateTimeUTC,
+        seriesCat = model.Series(
+            siteResult, varResult, 3, res.BeginDateTimeUTC,
             res.EndDateTimeUTC, self.get_source_by_id())
 
         return [seriesCat]
@@ -108,9 +115,9 @@ class PyhisDao(BaseDao):
         variable = self.get_variable_by_code(variable_code)
 
         #first find the site and variable
-        series = self.db_session.query(model.SeriesCatalog).filter(
-            and_(model.SeriesCatalog.Site==site,
-                 model.SeriesCatalog.Variable == variable)).one()
+        series = self.db_session.query(model.Series).filter(
+            and_(model.Series.Site==site,
+                 model.Series.Variable == variable)).one()
 
 
         if site and variable:

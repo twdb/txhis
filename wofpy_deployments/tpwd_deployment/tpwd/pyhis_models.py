@@ -1,11 +1,6 @@
-import datetime
-
-from sqlalchemy import (Table, Column, Integer, String, ForeignKey, Float,
-                        DateTime, Boolean)
-
-from sqlalchemy.sql import join, select, func, label
-from sqlalchemy.orm import backref, mapper, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import backref, relationship
 
 import wof.models as wof_base
 
@@ -137,20 +132,20 @@ class DataValue(Base, wof_base.BaseDataValue):
     QualityControlLevelID = wof_base.QualityControlLevelTypes['RAW_DATA'][1]
 
     SeriesID = Column('timeseries_id', Integer, ForeignKey('timeseries.id'))
-    SeriesCatalog = relationship('SeriesCatalog',
-                                 backref=backref('DataValues', lazy='dynamic'))
+    Series = relationship('Series',
+                          backref=backref('DataValues', lazy='dynamic'))
 
     @property
     def VariableID(self):
         try:
-            return SeriesCatalog.VariableID
+            return Series.VariableID
         except AttributeError:
             return None
 
     @property
     def SiteID(self):
         try:
-            return SeriesCatalog.SiteID
+            return Series.SiteID
         except AttributeError:
             return None
 
@@ -205,7 +200,7 @@ class OffsetType(wof_base.BaseOffsetType):
     pass
 
 
-class SeriesCatalog(Base, wof_base.BaseSeriesCatalog):
+class Series(Base, wof_base.BaseSeries):
     __tablename__ = 'timeseries'
 
     SeriesID = Column('id', Integer, primary_key=True)
@@ -235,9 +230,9 @@ class SeriesCatalog(Base, wof_base.BaseSeriesCatalog):
     # Method = BaseMethod()
 
     SiteID = Column('site_id', ForeignKey('site.id'))
-    Site = relationship('Site', backref=('SeriesCatalogs'), lazy='dynamic')
+    Site = relationship('Site', backref=('Series'), lazy='dynamic')
     VariableID = Column('variable_id', ForeignKey('variable.id'))
-    Variable = relationship('Variable', backref=('SeriesCatalogs'))
+    Variable = relationship('Variable', backref=('Series'))
 
     @property
     def SiteCode(self):
@@ -274,13 +269,20 @@ class SeriesCatalog(Base, wof_base.BaseSeriesCatalog):
         except AttributeError:
             return None
 
+    @property
+    def ValueCount(self):
+        try:
+            return self.value_count
+        except AttributeError:
+            self.value_count = self.DataValues.count()
+            return self.value_count
+
     # def __init__(self, site=None, variable=None, value_count=None,
     #              begin_date_time_utc=None, end_date_time_utc=None,
     #              source=None):
-
     #     self.Site = site
     #     self.Variable = variable
-    #     self.ValueCount = value_count
+    #     self.value_count = value_count
     #     self.BeginDateTimeUTC = begin_date_time_utc
     #     self.EndDateTimeUTC = end_date_time_utc
 
