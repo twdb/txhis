@@ -1,3 +1,4 @@
+
 import datetime
 import ConfigParser
 
@@ -33,8 +34,8 @@ class CbiDao(BaseDao):
 
         if config.has_section('Contact'):
             self.contact_info = dict(
-                name=config.get('Contact', 'Name'),
-                phone=config.get('Contact', 'Phone'),
+                # name=config.get('Contact', 'Name'),
+                # phone=config.get('Contact', 'Phone'),
                 email=config.get('Contact', 'Email'),
                 organization=config.get('Contact', 'Organization'),
                 link=config.get('Contact', 'Link'),
@@ -147,7 +148,6 @@ class CbiDao(BaseDao):
             begin_date_time = begin_date_time + 'T00:00:00'
         if end_date_time.find(':') == -1:
             end_date_time = end_date_time + 'T23:59:59'
-
         #Call GetObservation
         response = self.cbi_sos_client.get_observation(
             site_code, var_code,
@@ -179,8 +179,8 @@ class CbiDao(BaseDao):
         """
         source = model.Source()
 
-        source.ContactName = self.contact_info['name']
-        source.Phone = self.contact_info['phone']
+        # source.ContactName = self.contact_info['name']
+        # source.Phone = self.contact_info['phone']
         source.Email = self.contact_info['email']
         source.Organization = self.contact_info['organization']
         source.SourceLink = self.contact_info['link']

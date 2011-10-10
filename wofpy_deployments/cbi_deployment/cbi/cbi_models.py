@@ -9,6 +9,7 @@ class DataValue(wof_base.BaseDataValue):
         self.DateTimeUTC = date_time_utc
         self.SiteID = site_id
         self.VariableID = variable_id
+        self.SourceID = 1
 
     #UTCOffset = None
     #OffsetValue = None

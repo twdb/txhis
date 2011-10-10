@@ -171,7 +171,7 @@ class Series(Base, wof_base.BaseSeries):
     GeneralCategory = Column(String)
     #MethodID = None
     #MethodDescription = None
-    #SourceID = None #TODO
+    SourceID = 1
     #Organization = None
     #SourceDescription = None
     #QualityControlLevelID = None
@@ -192,4 +192,3 @@ class Series(Base, wof_base.BaseSeries):
 
     # TODO...
     Method = None
-    Source = None
