@@ -1,0 +1,6 @@
+# python bytecode
+*.pyc
+
+# ignore setuptools build files
+*.egg-info
+dist/
