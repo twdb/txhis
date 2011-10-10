@@ -544,7 +544,7 @@ if __name__ == '__main__':
                         series.start_time, "%Y-%m-%dT%H:%M:%SZ")
 
                     time_delta = end_datetime - start_datetime
-                    series_cat.ValueCount = time_delta.days
+                    series_cat.ValueCount = time_delta.days * 240
 
                 cache_series_cats.append(series_cat)
 
