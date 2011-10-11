@@ -138,9 +138,8 @@ class CbiDao(BaseDao):
                str(begin_date_time) < str(series_cat.BeginDateTimeUTC):
             begin_date_time = str(series_cat.BeginDateTimeUTC)
             begin_date_time = str(begin_date_time).replace(' ', 'T')
-
         if not end_date_time or \
-               str(end_date_time) < str(series_cat.EndDateTimeUTC):
+               str(end_date_time) > str(series_cat.EndDateTimeUTC):
             end_date_time = series_cat.EndDateTimeUTC
             end_date_time = str(end_date_time).replace(' ', 'T')
 
@@ -148,6 +147,7 @@ class CbiDao(BaseDao):
             begin_date_time = begin_date_time + 'T00:00:00'
         if end_date_time.find(':') == -1:
             end_date_time = end_date_time + 'T23:59:59'
+
         #Call GetObservation
         response = self.cbi_sos_client.get_observation(
             site_code, var_code,
