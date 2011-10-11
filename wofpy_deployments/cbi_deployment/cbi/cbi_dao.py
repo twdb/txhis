@@ -181,6 +181,7 @@ class CbiDao(BaseDao):
 
         # source.ContactName = self.contact_info['name']
         # source.Phone = self.contact_info['phone']
+        source.SourceID = 1
         source.Email = self.contact_info['email']
         source.Organization = self.contact_info['organization']
         source.SourceLink = self.contact_info['link']
