@@ -277,6 +277,26 @@ class Series(Base, wof_base.BaseSeries):
             self.value_count = self.DataValues.count()
             return self.value_count
 
+    @property
+    def BeginDateTimeUTC(self):
+        try:
+            return self.begin_date_time_utc
+        except AttributeError:
+            self.begin_date_time_utc = self.DataValues.order_by(
+                DataValue.DateTimeUTC.asc()).first().DateTimeUTC
+            return self.begin_date_time_utc
+
+    @property
+    def EndDateTimeUTC(self):
+        try:
+            return self.end_date_time_utc
+        except AttributeError:
+            self.end_date_time_utc = self.DataValues.order_by(
+                DataValue.DateTimeUTC.desc()).first().DateTimeUTC
+            return self.end_date_time_utc
+
+
+
     # def __init__(self, site=None, variable=None, value_count=None,
     #              begin_date_time_utc=None, end_date_time_utc=None,
     #              source=None):
