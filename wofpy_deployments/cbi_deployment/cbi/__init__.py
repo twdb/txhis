@@ -1,12 +1,16 @@
 import logging
 import os
+import socket
 import tempfile
 
 import wof
 
 from cbi_dao import CbiDao
 
-DEPLOYED = True
+if socket.gethostname() == 'Midgewater':
+    DEPLOYED = True
+else:
+    DEPLOYED = False
 
 if DEPLOYED:
     CBI_DEPLOYMENT_DIR = '/space/www/wofpy_deployments/cbi_deployment'

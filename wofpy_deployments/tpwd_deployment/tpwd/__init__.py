@@ -1,5 +1,6 @@
 import logging
 import os
+import socket
 
 import wof
 
@@ -7,24 +8,29 @@ from pyhis_dao import PyhisDao
 
 logging.basicConfig(level=logging.DEBUG)
 
-DEPLOYED = True
+if socket.gethostname() == 'Midgewater':
+    DEPLOYED = True
+else:
+    DEPLOYED = False
+
+APP_NAME = 'tpwd'
 
 if DEPLOYED:
-    TPWD_DEPLOYMENT_DIR = '/space/www/wofpy_deployments/tpwd_deployment'
+    DEPLOYMENT_DIR = '/space/www/wofpy_deployments/%s_deployment' % APP_NAME
 else:
-    TPWD_DEPLOYMENT_DIR = './'
+    DEPLOYMENT_DIR = os.path.abspath('../')
 
-TPWD_CACHE_DIR = os.path.join(TPWD_DEPLOYMENT_DIR,
-                              'cache/')
-TPWD_CONFIG_FILE = os.path.join(TPWD_DEPLOYMENT_DIR,
-                                'tpwd_config.cfg')
+CACHE_DIR = os.path.join(DEPLOYMENT_DIR,
+                         'cache/')
+CONFIG_FILE = os.path.join(DEPLOYMENT_DIR,
+                           APP_NAME + '_config.cfg')
 
-TPWD_DATABASE_URI = 'sqlite:////' + os.path.join(
-    TPWD_CACHE_DIR, 'tpwd_pyhis_cache.db')
+DATABASE_URI = 'sqlite:////' + os.path.join(
+    CACHE_DIR, APP_NAME + '_pyhis_cache.db')
 
-tpwd_dao = PyhisDao(TPWD_DATABASE_URI,
-                    'tpwd_config.cfg')
-app = wof.create_wof_app(tpwd_dao, TPWD_CONFIG_FILE)
+app_dao = PyhisDao(DATABASE_URI,
+                   CONFIG_FILE)
+app = wof.create_wof_app(app_dao, CONFIG_FILE)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, threaded=True)
