@@ -502,6 +502,7 @@ def convert_to_pyhis():
             name=wdft_converted_units_name)
 
         variable = cache.CacheVariable(
+            units=units,
             name=wdft_parameter_name,
             code=wdft_parameter_code,
             vocabulary=TCEQ_VOCABULARY)

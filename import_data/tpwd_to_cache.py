@@ -143,6 +143,7 @@ def cache_row(row, csv_file_path, timestamp):
             name=wdft_converted_units_name)
 
         variable = cache.CacheVariable(
+            units=units,
             name=wdft_parameter_name,
             code=wdft_parameter_code,
             vocabulary=TPWD_VOCABULARY)
