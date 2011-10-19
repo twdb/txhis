@@ -93,7 +93,8 @@ class Variable(Base, wof_base.BaseVariable):
     ValueType = "Field Observation"
     DataType = "Sporadic"
     NoDataValue = Column('no_data_value', String)
-    # VariableUnitsID = Column(Integer, ForeignKey('units.id'))
+    VariableUnitsID = Column('units_id', Integer, ForeignKey('units.id'))
+    VariableUnits = relationship('Units')
 
     @property
     def SampleMedium(self):
@@ -314,3 +315,12 @@ class Series(Base, wof_base.BaseSeries):
     #                         wof_base.QualityControlLevelTypes['RAW_DATA'][0]
 
     #     self.Source = source
+
+
+class Units(Base, wof_base.BaseUnits):
+    __tablename__ = 'units'
+
+    UnitsID = Column('id', Integer, primary_key=True)
+    UnitsName = Column('name', String)
+    #UnitsType = None
+    UnitsAbbreviation = Column('abbreviation', String)
