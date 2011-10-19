@@ -49,7 +49,7 @@ UNITS_DICT = {
     'mgl': ('milligrams per liter', 'mgl', None),
     'ntu': ('nephelometric turbidity units', 'ntu', None),
     'ppt': ('parts per thousand', 'ppt', None),
-    'ppm': ('parts per million', 'ppt', lambda x: x / 1000.0),
+    'ppm': ('parts per million', 'ppm', lambda x: x / 1000.0),
     }
 
 PARAMETERS_DICT = {
