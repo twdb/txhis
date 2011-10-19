@@ -53,7 +53,7 @@ def deploy(app):
     wsgi_dir = 'wsgi'
     wsgi_conf_file = app + '_apache_wsgi.conf'
     remote_wsgi_conf_file = os.path.join(deployment_dir, wsgi_conf_file)
-    app_conf_file = os.path.join(app, app + '_config.cfg')
+    app_conf_file = app + '_config.cfg'
     # calculate file paths
     dist_tar = '%s.tar.gz' % dist
     temp_deployment_app = os.path.join('/tmp', deployment_app)
