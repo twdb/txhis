@@ -84,7 +84,6 @@ class PyhisDao(BaseDao):
     def get_series_by_sitecode(self, site_code):
         siteResult = model.Site.query.filter(
             model.Site.SiteCode == site_code).one()
-
         if siteResult:
             return siteResult.Series
         return None
@@ -125,9 +124,11 @@ class PyhisDao(BaseDao):
                 return series.DataValues.filter(
                     and_(
                         model.DataValue.DateTimeUTC >= begin_date_time,
-                        model.DataValue.DateTimeUTC <= end_date_time)).all()
+                        model.DataValue.DateTimeUTC <= end_date_time)).order_by(
+                    model.DataValue.DateTimeUTC.asc()).all()
             else:
-                return series.DataValues.all()
+                return series.DataValues.order_by(
+                    model.DataValue.DateTimeUTC.asc()).all()
 
                 # return model.DataValue.query.filter(
                 #     and_(model.DataValue.SiteID == 1,
