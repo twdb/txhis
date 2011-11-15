@@ -125,7 +125,7 @@ def copy_cache_file(app, cache_file):
 def deploy_central():
     """deploys an application"""
     deployment_name = 'wdft_central'
-    local_app_dir = os.path.join('wofpy_deployments', deployment_name)
+    local_app_dir = deployment_name
     with lcd(local_app_dir):
         local('python setup.py sdist --formats=gztar', capture=False)
 
