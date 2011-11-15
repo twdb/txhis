@@ -139,6 +139,7 @@ def deploy_central():
     wsgi_dir = 'wsgi'
     wsgi_conf_file = 'wdft_central_apache_wsgi.conf'
     remote_wsgi_conf_file = os.path.join(remote_app_dir, wsgi_conf_file)
+    data_dir = 'data'
 
     # calculate file paths
     dist_tar = '%s.tar.gz' % dist
@@ -163,3 +164,4 @@ def deploy_central():
     with lcd(local_app_dir):
         put(wsgi_dir, remote_app_dir)
         put(wsgi_conf_file, remote_wsgi_conf_file)
+        put(data_dir, remote_app_dir)
