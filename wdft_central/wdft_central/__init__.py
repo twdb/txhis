@@ -1,6 +1,7 @@
 import os
 import socket
 
+import service
 import app
 
 if socket.gethostname() == 'Midgewater':

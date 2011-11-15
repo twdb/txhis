@@ -5,7 +5,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy import orm
 from soaplib.core.server import wsgi
 
-import service
+from wdft_central import service
 
 
 def create_app(database_uri):
